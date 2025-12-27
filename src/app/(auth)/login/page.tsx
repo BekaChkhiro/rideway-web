@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { signIn } from 'next-auth/react';
@@ -32,7 +32,7 @@ import { Separator } from '@/components/ui/separator';
 
 import { loginSchema, type LoginInput } from '@/lib/validations/auth';
 
-export default function LoginPage() {
+function LoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/';
@@ -49,6 +49,18 @@ export default function LoginPage() {
       rememberMe: false,
     },
   });
+
+  // Show error from URL params (e.g., session expired)
+  useEffect(() => {
+    if (error) {
+      const errorMessages: Record<string, string> = {
+        SessionExpired: 'Your session has expired. Please sign in again.',
+        AccessDenied: 'Access denied. You do not have permission to access this resource.',
+        default: 'An error occurred. Please try again.',
+      };
+      toast.error(errorMessages[error] || errorMessages.default);
+    }
+  }, [error]);
 
   async function onSubmit(data: LoginInput) {
     setIsLoading(true);
@@ -73,16 +85,6 @@ export default function LoginPage() {
     } finally {
       setIsLoading(false);
     }
-  }
-
-  // Show error from URL params (e.g., session expired)
-  if (error) {
-    const errorMessages: Record<string, string> = {
-      SessionExpired: 'Your session has expired. Please sign in again.',
-      AccessDenied: 'Access denied. You do not have permission to access this resource.',
-      default: 'An error occurred. Please try again.',
-    };
-    toast.error(errorMessages[error] || errorMessages.default);
   }
 
   return (
@@ -251,5 +253,21 @@ export default function LoginPage() {
         </p>
       </CardFooter>
     </Card>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <Card className="border-0 shadow-lg">
+          <CardContent className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </CardContent>
+        </Card>
+      }
+    >
+      <LoginPageContent />
+    </Suspense>
   );
 }
