@@ -220,7 +220,9 @@ describe('SearchPage', () => {
       render(<SearchPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('John Doe')).toBeInTheDocument();
+        // John Doe appears in multiple sections (user, post author, listing seller, thread author)
+        const johnDoes = screen.getAllByText('John Doe');
+        expect(johnDoes.length).toBeGreaterThan(0);
       });
     });
 

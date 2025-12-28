@@ -529,7 +529,7 @@
 
   /* Hover lift effect */
   .hover-lift {
-    @apply transition-premium;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .hover-lift:hover {
@@ -538,11 +538,15 @@
 
   /* Premium card hover */
   .card-hover {
-    @apply transition-premium;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .card-hover:hover {
-    @apply shadow-premium-lg;
+    box-shadow:
+      0 4px 8px rgba(0, 0, 0, 0.02),
+      0 8px 16px rgba(0, 0, 0, 0.04),
+      0 16px 32px rgba(0, 0, 0, 0.06),
+      0 32px 64px rgba(0, 0, 0, 0.04);
     transform: translateY(-2px);
   }
 }
