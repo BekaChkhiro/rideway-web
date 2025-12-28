@@ -1,9 +1,11 @@
 import { withAuth } from 'next-auth/middleware';
 import { NextResponse } from 'next/server';
 
-// Routes that require authentication
-const protectedRoutes = [
-  '/feed',
+// Routes that require authentication (exact match)
+const protectedExactRoutes = ['/'];
+
+// Routes that require authentication (prefix match)
+const protectedPrefixRoutes = [
   '/profile',
   '/settings',
   '/messages',
@@ -25,7 +27,7 @@ export default withAuth(
     // If user is authenticated and trying to access auth routes
     // Redirect them to home/feed
     if (token && authRoutes.some((route) => pathname.startsWith(route))) {
-      return NextResponse.redirect(new URL('/feed', req.url));
+      return NextResponse.redirect(new URL('/', req.url));
     }
 
     // Check for admin routes
@@ -33,7 +35,7 @@ export default withAuth(
     //   adminRoutes.some((route) => pathname.startsWith(route)) &&
     //   token?.role !== 'admin'
     // ) {
-    //   return NextResponse.redirect(new URL('/feed', req.url));
+    //   return NextResponse.redirect(new URL('/', req.url));
     // }
 
     // Check for token expiration error
@@ -59,7 +61,6 @@ export default withAuth(
 
         // Allow public routes
         if (
-          pathname === '/' ||
           pathname.startsWith('/api/') ||
           pathname.startsWith('/_next/') ||
           pathname.startsWith('/static/') ||
@@ -69,9 +70,9 @@ export default withAuth(
         }
 
         // Check if route requires authentication
-        const requiresAuth = protectedRoutes.some((route) =>
-          pathname.startsWith(route)
-        );
+        const requiresAuth =
+          protectedExactRoutes.includes(pathname) ||
+          protectedPrefixRoutes.some((route) => pathname.startsWith(route));
 
         if (requiresAuth) {
           return !!token;

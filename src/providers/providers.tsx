@@ -13,8 +13,8 @@ export function Providers({ children }: ProvidersProps) {
     <AuthProvider>
       <ThemeProvider
         attribute="class"
-        defaultTheme="system"
-        enableSystem
+        defaultTheme="dark"
+        forcedTheme="dark"
         disableTransitionOnChange
       >
         <QueryProvider>{children}</QueryProvider>

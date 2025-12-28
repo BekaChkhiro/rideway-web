@@ -25,7 +25,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { ThemeToggleSimple } from '@/components/shared/theme-toggle';
 import { useLogout } from '@/lib/api/hooks';
 import { cn } from '@/lib/utils';
 
@@ -88,9 +87,6 @@ export function Header({ onMenuClick, className }: HeaderProps) {
 
       {/* Right side actions */}
       <div className="ml-auto flex items-center gap-2">
-        {/* Theme toggle */}
-        <ThemeToggleSimple />
-
         {/* Notifications */}
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
