@@ -43,7 +43,7 @@ git add . && git commit -m "short message" && git push
 
 | Component | Status | Progress |
 |-----------|--------|----------|
-| Backend (rideway-api) | 🔨 Auth Ready | 25% |
+| Backend (rideway-api) | 🔨 Auth + Users Ready | 30% |
 | Frontend (rideway-web) | ✅ Design Shell Ready | 20% |
 | Mobile | ⏳ Planned | 0% |
 
@@ -51,13 +51,12 @@ git add . && git commit -m "short message" && git push
 
 ## Current Task
 
-**Phase 1: Users Module**
+**Phase 1: Media Module (Next)**
 
 შემდეგი ნაბიჯი:
-1. [ ] Users validators (profile update, etc.)
-2. [ ] Users service (profile, follow, block)
-3. [ ] Users controller
-4. [ ] Users routes
+1. [ ] Cloudflare R2 setup
+2. [ ] Media upload service
+3. [ ] Avatar/Cover upload endpoints
 
 ---
 
@@ -107,19 +106,29 @@ git add . && git commit -m "short message" && git push
   - [x] Build: ✅ წარმატებული
   - [x] Tested endpoints: register ✅, verify-otp ✅, login ✅
 
+### Session 5 (2026-01-08)
+- [x] **Users Module დასრულდა:**
+  - [x] Users validators (profile update, search, pagination)
+  - [x] Users service (profile CRUD, follow/unfollow, block/unblock)
+  - [x] Users controller
+  - [x] Users routes (`/api/v1/users/*`)
+  - [x] Updated validate middleware (supports body, params, query)
+  - [x] Fixed AppError import (centralized in error-handler.ts)
+  - [x] Build: ✅ წარმატებული
+  - [x] Tested endpoints: get profile ✅, update profile ✅, search ✅, follow ✅, unfollow ✅, block ✅, unblock ✅
+
 ---
 
 ## Next Tasks (Priority Order)
 
 ### Immediate (მიმდინარე)
-- [ ] **Users Module** (Phase 1 გაგრძელება)
-  - [ ] Users validators
-  - [ ] Users service (profile CRUD, follow/unfollow, block/unblock)
-  - [ ] Users controller
-  - [ ] Users routes
+- [ ] **Media Module** (Phase 1 გაგრძელება)
+  - [ ] Cloudflare R2 setup
+  - [ ] Media upload service
+  - [ ] Avatar/Cover upload endpoints
 
 ### Phase 1: Foundation (გაგრძელება)
-- [ ] Media module (R2 upload)
+- [ ] Media module (R2 upload) - ზემოთ
 
 ### Phase 2: Social
 - [ ] Posts module (CRUD, likes, comments)
@@ -173,18 +182,22 @@ rideway-api/
 │   │   └── database.ts     # Prisma client
 │   ├── middleware/
 │   │   ├── index.ts        # Exports
-│   │   ├── error-handler.ts
+│   │   ├── error-handler.ts # AppError class + handler
 │   │   ├── async-handler.ts
-│   │   ├── validate.ts
+│   │   ├── validate.ts     # Zod validation (body/params/query)
 │   │   └── auth.ts         # JWT verification ✅
 │   ├── routes/
-│   │   └── auth.routes.ts  # Auth routes ✅
+│   │   ├── auth.routes.ts  # Auth routes ✅
+│   │   └── users.routes.ts # Users routes ✅
 │   ├── controllers/
-│   │   └── auth.controller.ts ✅
+│   │   ├── auth.controller.ts ✅
+│   │   └── users.controller.ts ✅
 │   ├── services/
-│   │   └── auth.service.ts ✅
+│   │   ├── auth.service.ts ✅
+│   │   └── users.service.ts ✅
 │   ├── validators/
-│   │   └── auth.ts         # Zod schemas ✅
+│   │   ├── auth.ts         # Auth Zod schemas ✅
+│   │   └── users.ts        # Users Zod schemas ✅
 │   ├── types/
 │   │   ├── api.ts          # API response types
 │   │   └── express.d.ts    # Express extensions
@@ -214,6 +227,22 @@ rideway-api/
 | `/api/v1/auth/reset-password` | POST | - | პაროლის შეცვლა |
 | `/api/v1/auth/resend-otp` | POST | - | OTP ხელახლა გაგზავნა |
 | `/api/v1/auth/me` | GET | ✅ | მიმდინარე მომხმარებელი |
+
+---
+
+## Users Module API
+
+| Endpoint | Method | Auth | Description |
+|----------|--------|------|-------------|
+| `/api/v1/users/search?q=` | GET | ✅ | მომხმარებლების ძებნა |
+| `/api/v1/users/me` | PATCH | ✅ | პროფილის განახლება |
+| `/api/v1/users/:username` | GET | opt | პროფილის ნახვა |
+| `/api/v1/users/:id/followers` | GET | ✅ | მიმდევრების სია |
+| `/api/v1/users/:id/following` | GET | ✅ | გამოწერილების სია |
+| `/api/v1/users/:id/follow` | POST | ✅ | გამოწერა |
+| `/api/v1/users/:id/follow` | DELETE | ✅ | გამოწერის გაუქმება |
+| `/api/v1/users/:id/block` | POST | ✅ | დაბლოკვა |
+| `/api/v1/users/:id/block` | DELETE | ✅ | ბლოკის მოხსნა |
 
 ---
 
@@ -253,7 +282,8 @@ rideway-api/
 | 2026-01-08 | #2 | Workflow examples, GitHub/Railway setup, backend repo init |
 | 2026-01-08 | #3 | Backend setup: Express.js, TypeScript, Prisma 7, DB schema |
 | 2026-01-08 | #4 | Auth module: validators, service, controller, routes, middleware |
+| 2026-01-08 | #5 | Users module: profile CRUD, follow/unfollow, block/unblock |
 
 ---
 
-*Last updated: 2026-01-08 - Session #4*
+*Last updated: 2026-01-08 - Session #5*
