@@ -43,7 +43,7 @@ git add . && git commit -m "short message" && git push
 
 | Component | Status | Progress |
 |-----------|--------|----------|
-| Backend (rideway-api) | 🔨 Auth + Users + Media + Posts + Stories + Chat + Notifications + Listings + Forum + Services Ready | 85% |
+| Backend (rideway-api) | 🔨 Auth + Users + Media + Posts + Stories + Chat + Notifications + Listings + Forum + Services + Socket.io Ready | 90% |
 | Frontend (rideway-web) | ✅ Design Shell Ready | 20% |
 | Mobile | ⏳ Planned | 0% |
 
@@ -51,15 +51,13 @@ git add . && git commit -m "short message" && git push
 
 ## Current Task
 
-**Phase 5: Community Module (Complete) ✅**
+**Phase 6: Real-time & Admin (In Progress)**
 
 დასრულდა:
-1. [x] Forum module (categories, threads, replies) ✅
-2. [x] Services module (service providers, reviews) ✅
+1. [x] Socket.io setup (real-time chat, typing, online status) ✅
 
 შემდეგი:
-3. [ ] Socket.io setup (real-time features)
-4. [ ] Admin API
+2. [ ] Admin API (user management, content moderation)
 
 ---
 
@@ -207,15 +205,22 @@ git add . && git commit -m "short message" && git push
   - [x] Image upload support
   - [x] Build: ✅ წარმატებული
 
+### Session 13 (2026-01-09)
+- [x] **Socket.io Module დასრულდა:**
+  - [x] Socket.io + Redis adapter setup
+  - [x] JWT authentication middleware for sockets
+  - [x] Chat handlers (join room, leave room, send message, typing indicators)
+  - [x] Online status tracking (user:online, user:offline events)
+  - [x] Real-time message delivery to conversation rooms
+  - [x] Mark messages as read via socket
+  - [x] Utility functions (emitToUser, emitToConversation, isUserOnline)
+  - [x] Build: ✅ წარმატებული
+
 ---
 
 ## Next Tasks (Priority Order)
 
 ### Immediate (მიმდინარე)
-- [ ] **Socket.io Setup** (Real-time)
-  - [ ] Chat real-time messaging
-  - [ ] Typing indicators
-  - [ ] Online status
 - [ ] **Admin API** (Phase 6)
   - [ ] User management
   - [ ] Content moderation
@@ -228,7 +233,7 @@ git add . && git commit -m "short message" && git push
 ### Phase 3: Communication ✅
 - [x] Chat module ✅
 - [x] Notifications module ✅
-- [ ] Socket.io setup (მოგვიანებით)
+- [x] Socket.io setup ✅
 
 ### Phase 4: Marketplace ✅
 - [x] Listings module ✅
@@ -241,7 +246,8 @@ git add . && git commit -m "short message" && git push
 - [x] Services module ✅
 - [x] Reviews ✅
 
-### Phase 6: Admin
+### Phase 6: Admin & Real-time ✅ (partial)
+- [x] Socket.io (real-time chat, typing, online status) ✅
 - [ ] Admin API
 - [ ] Moderation
 
@@ -278,6 +284,10 @@ rideway-api/
 │   │   ├── validate.ts     # Zod validation (body/params/query)
 │   │   ├── auth.ts         # JWT verification ✅
 │   │   └── upload.ts       # Multer file upload ✅
+│   ├── socket/
+│   │   ├── index.ts        # Socket.io setup + auth ✅
+│   │   └── handlers/
+│   │       └── chat.handler.ts # Chat events ✅
 │   ├── routes/
 │   │   ├── auth.routes.ts  # Auth routes ✅
 │   │   ├── users.routes.ts # Users routes ✅
@@ -557,6 +567,63 @@ rideway-api/
 
 ---
 
+## Socket.io Events
+
+**Connection:** `ws://localhost:8000` (requires JWT in `auth.token`)
+
+### Client → Server Events
+
+| Event | Data | Description |
+|-------|------|-------------|
+| `chat:join` | `conversationId: string` | საუბარში შესვლა |
+| `chat:leave` | `conversationId: string` | საუბრიდან გამოსვლა |
+| `chat:sendMessage` | `{ conversationId, content }` | შეტყობინების გაგზავნა |
+| `chat:typing` | `conversationId: string` | წერს... (typing indicator start) |
+| `chat:stopTyping` | `conversationId: string` | აღარ წერს (typing indicator stop) |
+| `chat:markRead` | `conversationId: string` | შეტყობინებების წაკითხულად მონიშვნა |
+| `users:getOnline` | `userIds: string[]` | მომხმარებლების ონლაინ სტატუსი |
+
+### Server → Client Events
+
+| Event | Data | Description |
+|-------|------|-------------|
+| `chat:newMessage` | `{ conversationId, message }` | ახალი შეტყობინება |
+| `chat:typingStart` | `{ conversationId, userId }` | მომხმარებელი წერს |
+| `chat:typingStop` | `{ conversationId, userId }` | მომხმარებელმა შეწყვიტა წერა |
+| `chat:messagesRead` | `{ conversationId, readBy }` | შეტყობინებები წაიკითხა |
+| `user:online` | `{ userId }` | მომხმარებელი ონლაინ გახდა |
+| `user:offline` | `{ userId }` | მომხმარებელი ოფლაინ გახდა |
+
+### Connection Example (JavaScript)
+```javascript
+import { io } from 'socket.io-client';
+
+const socket = io('ws://localhost:8000', {
+  auth: { token: 'JWT_ACCESS_TOKEN' }
+});
+
+socket.on('connect', () => console.log('Connected'));
+socket.on('user:online', ({ userId }) => console.log(`${userId} is online`));
+socket.on('chat:newMessage', ({ conversationId, message }) => {
+  console.log(`New message in ${conversationId}:`, message);
+});
+
+// Join conversation
+socket.emit('chat:join', 'conversation-id', (response) => {
+  console.log('Joined:', response.success);
+});
+
+// Send message
+socket.emit('chat:sendMessage', {
+  conversationId: 'conversation-id',
+  content: 'Hello!'
+}, (response) => {
+  console.log('Sent:', response.success);
+});
+```
+
+---
+
 ## Notes
 
 ### Session 1 Notes:
@@ -601,7 +668,8 @@ rideway-api/
 | 2026-01-09 | #10 | Notifications module: CRUD, unread count, mark as read |
 | 2026-01-09 | #11 | Listings module: CRUD, categories, search, filters, favorites |
 | 2026-01-09 | #12 | Forum + Services modules: threads, replies, reviews, ratings |
+| 2026-01-09 | #13 | Socket.io: real-time chat, typing indicators, online status, Redis adapter |
 
 ---
 
-*Last updated: 2026-01-09 - Session #12*
+*Last updated: 2026-01-09 - Session #13*
