@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import {
   Bell,
@@ -11,10 +10,10 @@ import {
   User,
   Settings,
   HelpCircle,
+  Search,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { SearchModal, useSearchModal, HeaderSearch } from '@/components/search';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,7 +24,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { useLogout } from '@/lib/api/hooks';
+import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 
 interface HeaderProps {
@@ -33,13 +32,17 @@ interface HeaderProps {
   className?: string;
 }
 
-export function Header({ onMenuClick, className }: HeaderProps) {
-  const { data: session } = useSession();
-  const router = useRouter();
-  const logout = useLogout();
-  const { open: searchOpen, setOpen: setSearchOpen } = useSearchModal();
+// TODO: Replace with actual user data from auth
+const mockUser = {
+  name: 'Demo User',
+  email: 'demo@rideway.ge',
+  image: null as string | null,
+};
 
-  const user = session?.user;
+export function Header({ onMenuClick, className }: HeaderProps) {
+  const router = useRouter();
+
+  const user = mockUser;
   const initials = user?.name
     ?.split(' ')
     .map((n) => n[0])
@@ -47,7 +50,8 @@ export function Header({ onMenuClick, className }: HeaderProps) {
     .toUpperCase() || 'U';
 
   const handleLogout = async () => {
-    await logout.mutateAsync();
+    // TODO: Implement logout
+    console.log('Logout clicked');
   };
 
   return (
@@ -69,7 +73,7 @@ export function Header({ onMenuClick, className }: HeaderProps) {
       </Button>
 
       {/* Logo */}
-      <Link href="/feed" className="flex items-center gap-2 group">
+      <Link href="/" className="flex items-center gap-2 group">
         <Image
           src="/Rideway-logo.svg"
           alt="Rideway"
@@ -80,9 +84,16 @@ export function Header({ onMenuClick, className }: HeaderProps) {
         />
       </Link>
 
-      {/* Search - Opens modal on click */}
+      {/* Search */}
       <div className="flex-1 md:max-w-md lg:max-w-lg">
-        <HeaderSearch onOpenModal={() => setSearchOpen(true)} />
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            type="search"
+            placeholder="Search Rideway..."
+            className="w-full pl-9 bg-muted/50"
+          />
+        </div>
       </div>
 
       {/* Right side actions */}
@@ -144,9 +155,6 @@ export function Header({ onMenuClick, className }: HeaderProps) {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-
-      {/* Search Modal */}
-      <SearchModal open={searchOpen} onOpenChange={setSearchOpen} />
     </header>
   );
 }

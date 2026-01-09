@@ -1,349 +1,157 @@
-import { getSession, signOut } from 'next-auth/react';
+import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
+import type { ApiError, ApiResponse } from '@/types';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
 
-// Error class for API errors
-export class ApiError extends Error {
-  public status: number;
-  public code: string;
-  public details?: unknown;
+// Token storage keys
+const ACCESS_TOKEN_KEY = 'rideway_access_token';
+const REFRESH_TOKEN_KEY = 'rideway_refresh_token';
 
-  constructor(
-    message: string,
-    status: number = 500,
-    code: string = 'UNKNOWN_ERROR',
-    details?: unknown
-  ) {
-    super(message);
-    this.name = 'ApiError';
-    this.status = status;
-    this.code = code;
-    this.details = details;
-  }
+// Create axios instance
+export const apiClient = axios.create({
+  baseURL: API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  timeout: 30000,
+});
+
+// Token management functions
+export function getAccessToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem(ACCESS_TOKEN_KEY);
 }
 
-// Request configuration
-interface RequestConfig extends Omit<RequestInit, 'body'> {
-  params?: Record<string, string | number | boolean | undefined>;
-  skipAuth?: boolean;
-  timeout?: number;
+export function getRefreshToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem(REFRESH_TOKEN_KEY);
 }
 
-// API Response wrapper
-interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: {
-    code: string;
-    message: string;
-    details?: unknown;
-  };
-  meta?: {
-    page?: number;
-    limit?: number;
-    total?: number;
-    totalPages?: number;
-  };
+export function setTokens(accessToken: string, refreshToken: string): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+  localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
 }
 
-class ApiClient {
-  private baseUrl: string;
-  private isRefreshing = false;
-  private refreshSubscribers: ((token: string) => void)[] = [];
+export function clearTokens(): void {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem(ACCESS_TOKEN_KEY);
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
+}
 
-  constructor(baseUrl: string = API_BASE_URL) {
-    this.baseUrl = baseUrl;
-  }
+// Request interceptor - add token
+apiClient.interceptors.request.use(
+  (config: InternalAxiosRequestConfig) => {
+    const token = getAccessToken();
+    if (token && config.headers) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
-  private subscribeTokenRefresh(callback: (token: string) => void) {
-    this.refreshSubscribers.push(callback);
-  }
+// Flag to prevent multiple refresh attempts
+let isRefreshing = false;
+let refreshSubscribers: ((token: string) => void)[] = [];
 
-  private onTokenRefreshed(token: string) {
-    this.refreshSubscribers.forEach((callback) => callback(token));
-    this.refreshSubscribers = [];
-  }
+function subscribeTokenRefresh(callback: (token: string) => void) {
+  refreshSubscribers.push(callback);
+}
 
-  private async getAuthHeaders(): Promise<HeadersInit> {
-    const session = await getSession();
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-    };
+function onTokenRefreshed(token: string) {
+  refreshSubscribers.forEach((callback) => callback(token));
+  refreshSubscribers = [];
+}
 
-    if (session?.accessToken) {
-      headers['Authorization'] = `Bearer ${session.accessToken}`;
+// Response interceptor - handle 401 and refresh token
+apiClient.interceptors.response.use(
+  (response) => response,
+  async (error: AxiosError<ApiError>) => {
+    const originalRequest = error.config;
+
+    // If no config or already retried, reject
+    if (!originalRequest) {
+      return Promise.reject(error);
     }
 
-    return headers;
-  }
-
-  private buildUrl(
-    endpoint: string,
-    params?: Record<string, string | number | boolean | undefined>
-  ): string {
-    const url = new URL(`${this.baseUrl}${endpoint}`);
-
-    if (params) {
-      Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          url.searchParams.append(key, String(value));
-        }
-      });
-    }
-
-    return url.toString();
-  }
-
-  private async handleResponse<T>(response: Response): Promise<T> {
-    const contentType = response.headers.get('content-type');
-    const isJson = contentType?.includes('application/json');
-
-    if (!response.ok) {
-      if (isJson) {
-        const errorData = await response.json();
-        throw new ApiError(
-          errorData.error?.message || 'Request failed',
-          response.status,
-          errorData.error?.code || 'REQUEST_FAILED',
-          errorData.error?.details
-        );
-      }
-
-      throw new ApiError(
-        response.statusText || 'Request failed',
-        response.status,
-        'REQUEST_FAILED'
-      );
-    }
-
-    if (!isJson) {
-      return {} as T;
-    }
-
-    const data: ApiResponse<T> = await response.json();
-
-    if (!data.success && data.error) {
-      throw new ApiError(
-        data.error.message,
-        response.status,
-        data.error.code,
-        data.error.details
-      );
-    }
-
-    return data.data as T;
-  }
-
-  private async handleTokenRefresh(
-    originalRequest: () => Promise<Response>
-  ): Promise<Response> {
-    if (this.isRefreshing) {
-      // Wait for token refresh
-      return new Promise((resolve) => {
-        this.subscribeTokenRefresh(async () => {
-          resolve(await originalRequest());
+    // Check if it's a 401 error and not a refresh token request
+    if (
+      error.response?.status === 401 &&
+      !originalRequest.url?.includes('/auth/refresh') &&
+      !originalRequest.url?.includes('/auth/login')
+    ) {
+      if (isRefreshing) {
+        // If already refreshing, queue this request
+        return new Promise((resolve) => {
+          subscribeTokenRefresh((token: string) => {
+            if (originalRequest.headers) {
+              originalRequest.headers.Authorization = `Bearer ${token}`;
+            }
+            resolve(apiClient(originalRequest));
+          });
         });
-      });
-    }
-
-    this.isRefreshing = true;
-
-    try {
-      const session = await getSession();
-
-      if (!session?.refreshToken) {
-        throw new Error('No refresh token available');
       }
 
-      // Try to refresh the token
-      const refreshResponse = await fetch(`${this.baseUrl}/auth/refresh`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken: session.refreshToken }),
-      });
+      isRefreshing = true;
+      const refreshToken = getRefreshToken();
 
-      if (!refreshResponse.ok) {
-        throw new Error('Token refresh failed');
-      }
-
-      const refreshData = await refreshResponse.json();
-
-      if (!refreshData.success) {
-        throw new Error('Token refresh failed');
-      }
-
-      // Update session (this would be handled by NextAuth callbacks)
-      this.onTokenRefreshed(refreshData.data.accessToken);
-
-      // Retry original request
-      return await originalRequest();
-    } catch {
-      // Refresh failed, logout user
-      await signOut({ redirect: true, callbackUrl: '/login?error=SessionExpired' });
-      throw new ApiError('Session expired', 401, 'SESSION_EXPIRED');
-    } finally {
-      this.isRefreshing = false;
-    }
-  }
-
-  private async request<T>(
-    endpoint: string,
-    config: RequestConfig & { body?: unknown } = {}
-  ): Promise<T> {
-    const { params, skipAuth, timeout = 30000, body, ...init } = config;
-    const url = this.buildUrl(endpoint, params);
-
-    const headers = skipAuth
-      ? { 'Content-Type': 'application/json' }
-      : await this.getAuthHeaders();
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
-
-    const makeRequest = async (): Promise<Response> => {
-      return fetch(url, {
-        ...init,
-        headers: {
-          ...headers,
-          ...init.headers,
-        },
-        body: body ? JSON.stringify(body) : undefined,
-        signal: controller.signal,
-      });
-    };
-
-    try {
-      let response = await makeRequest();
-
-      // Handle 401 - try token refresh
-      if (response.status === 401 && !skipAuth) {
-        response = await this.handleTokenRefresh(makeRequest);
-      }
-
-      return await this.handleResponse<T>(response);
-    } catch (error) {
-      if (error instanceof ApiError) {
-        throw error;
-      }
-
-      if (error instanceof Error) {
-        if (error.name === 'AbortError') {
-          throw new ApiError('Request timeout', 408, 'TIMEOUT');
+      if (!refreshToken) {
+        clearTokens();
+        isRefreshing = false;
+        // Redirect to login
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
         }
-        throw new ApiError(error.message, 500, 'NETWORK_ERROR');
+        return Promise.reject(error);
       }
 
-      throw new ApiError('Unknown error occurred', 500, 'UNKNOWN_ERROR');
-    } finally {
-      clearTimeout(timeoutId);
-    }
-  }
+      try {
+        const response = await axios.post<
+          ApiResponse<{ accessToken: string; refreshToken: string }>
+        >(`${API_URL}/auth/refresh`, { refreshToken });
 
-  // HTTP Methods
-  async get<T>(
-    endpoint: string,
-    params?: Record<string, string | number | boolean | undefined>,
-    config?: RequestConfig
-  ): Promise<T> {
-    return this.request<T>(endpoint, {
-      ...config,
-      method: 'GET',
-      params,
-    });
-  }
+        const { accessToken, refreshToken: newRefreshToken } = response.data.data;
+        setTokens(accessToken, newRefreshToken);
 
-  async post<T>(
-    endpoint: string,
-    data?: unknown,
-    config?: RequestConfig
-  ): Promise<T> {
-    return this.request<T>(endpoint, {
-      ...config,
-      method: 'POST',
-      body: data,
-    });
-  }
+        isRefreshing = false;
+        onTokenRefreshed(accessToken);
 
-  async put<T>(
-    endpoint: string,
-    data?: unknown,
-    config?: RequestConfig
-  ): Promise<T> {
-    return this.request<T>(endpoint, {
-      ...config,
-      method: 'PUT',
-      body: data,
-    });
-  }
-
-  async patch<T>(
-    endpoint: string,
-    data?: unknown,
-    config?: RequestConfig
-  ): Promise<T> {
-    return this.request<T>(endpoint, {
-      ...config,
-      method: 'PATCH',
-      body: data,
-    });
-  }
-
-  async delete<T>(endpoint: string, config?: RequestConfig): Promise<T> {
-    return this.request<T>(endpoint, {
-      ...config,
-      method: 'DELETE',
-    });
-  }
-
-  // File upload
-  async upload<T>(
-    endpoint: string,
-    formData: FormData,
-    config?: Omit<RequestConfig, 'body'>
-  ): Promise<T> {
-    const { skipAuth, timeout = 60000, ...init } = config || {};
-
-    const session = skipAuth ? null : await getSession();
-    const headers: HeadersInit = {};
-
-    if (session?.accessToken) {
-      headers['Authorization'] = `Bearer ${session.accessToken}`;
-    }
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
-
-    try {
-      const response = await fetch(this.buildUrl(endpoint), {
-        ...init,
-        method: 'POST',
-        headers,
-        body: formData,
-        signal: controller.signal,
-      });
-
-      return await this.handleResponse<T>(response);
-    } catch (error) {
-      if (error instanceof ApiError) {
-        throw error;
-      }
-
-      if (error instanceof Error) {
-        if (error.name === 'AbortError') {
-          throw new ApiError('Upload timeout', 408, 'TIMEOUT');
+        // Retry original request with new token
+        if (originalRequest.headers) {
+          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
         }
-        throw new ApiError(error.message, 500, 'UPLOAD_ERROR');
+        return apiClient(originalRequest);
+      } catch (refreshError) {
+        isRefreshing = false;
+        clearTokens();
+        // Redirect to login
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
+        }
+        return Promise.reject(refreshError);
       }
-
-      throw new ApiError('Upload failed', 500, 'UPLOAD_ERROR');
-    } finally {
-      clearTimeout(timeoutId);
     }
+
+    return Promise.reject(error);
   }
+);
+
+// Helper function to extract error message
+export function getErrorMessage(error: unknown): string {
+  if (axios.isAxiosError(error)) {
+    const apiError = error.response?.data as ApiError | undefined;
+    return apiError?.error?.message || error.message || 'Something went wrong';
+  }
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return 'Something went wrong';
 }
 
-// Export singleton instance
-export const api = new ApiClient();
+// Helper function to check if error is API error
+export function isApiError(error: unknown): error is AxiosError<ApiError> {
+  return axios.isAxiosError(error) && error.response?.data?.error !== undefined;
+}
 
-// Export class for testing or custom instances
-export { ApiClient };
+export default apiClient;

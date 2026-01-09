@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useSession } from 'next-auth/react';
 import {
   Home,
   Compass,
@@ -27,7 +26,7 @@ import {
 import { cn } from '@/lib/utils';
 
 const navItems = [
-  { href: '/feed', label: 'Feed', icon: Home },
+  { href: '/', label: 'Feed', icon: Home },
   { href: '/explore', label: 'Explore', icon: Compass },
   { href: '/marketplace', label: 'Marketplace', icon: Store },
   { href: '/parts', label: 'Parts', icon: Wrench },
@@ -35,6 +34,13 @@ const navItems = [
   { href: '/services', label: 'Services', icon: MapPin },
   { href: '/messages', label: 'Messages', icon: Mail },
 ];
+
+// TODO: Replace with actual user data from auth
+const mockUser = {
+  name: 'Demo User',
+  email: 'demo@rideway.ge',
+  image: null as string | null,
+};
 
 interface SidebarProps {
   isCollapsed?: boolean;
@@ -44,9 +50,8 @@ interface SidebarProps {
 
 export function Sidebar({ isCollapsed = false, onToggle, className }: SidebarProps) {
   const pathname = usePathname();
-  const { data: session } = useSession();
 
-  const user = session?.user;
+  const user = mockUser;
   const initials = user?.name
     ?.split(' ')
     .map((n) => n[0])
@@ -183,9 +188,8 @@ interface MobileSidebarProps {
 
 export function MobileSidebar({ onClose }: MobileSidebarProps) {
   const pathname = usePathname();
-  const { data: session } = useSession();
 
-  const user = session?.user;
+  const user = mockUser;
   const initials = user?.name
     ?.split(' ')
     .map((n) => n[0])

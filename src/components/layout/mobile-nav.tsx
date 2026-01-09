@@ -25,7 +25,9 @@ export function MobileNav({ className }: MobileNavProps) {
   const { data: session } = useSession();
 
   const user = session?.user;
-  const initials = user?.name
+  const fullName = (user as { fullName?: string })?.fullName || '';
+  const avatarUrl = (user as { avatarUrl?: string })?.avatarUrl;
+  const initials = fullName
     ?.split(' ')
     .map((n) => n[0])
     .join('')
@@ -76,7 +78,7 @@ export function MobileNav({ className }: MobileNavProps) {
                     isActive && 'ring-primary'
                   )}
                 >
-                  <AvatarImage src={user?.image || undefined} alt={user?.name || 'User'} />
+                  <AvatarImage src={avatarUrl || undefined} alt={fullName || 'User'} />
                   <AvatarFallback className="bg-primary text-primary-foreground text-xs">
                     {initials}
                   </AvatarFallback>

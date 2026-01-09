@@ -1,12 +1,50 @@
-import { NextAuthOptions } from 'next-auth';
+import type { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import type { AuthResponse } from '@/types/auth';
+import type { User } from '@/types';
 
-const API_URL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL;
+const API_URL = process.env.API_URL || 'http://localhost:8000/api/v1';
+
+// Extend NextAuth types
+declare module 'next-auth' {
+  interface Session {
+    user: User;
+    accessToken: string;
+    refreshToken: string;
+  }
+}
+
+declare module 'next-auth/jwt' {
+  interface JWT {
+    user: User;
+    accessToken: string;
+    refreshToken: string;
+    accessTokenExpires: number;
+    error?: string;
+  }
+}
+
+interface AuthResponse {
+  success: boolean;
+  data: {
+    user: User;
+    accessToken: string;
+    refreshToken: string;
+  };
+}
+
+interface RefreshResponse {
+  success: boolean;
+  data: {
+    accessToken: string;
+    refreshToken: string;
+  };
+}
 
 async function refreshAccessToken(token: {
-  accessToken: string;
   refreshToken: string;
+  user: User;
+  accessToken: string;
+  accessTokenExpires: number;
 }) {
   try {
     const response = await fetch(`${API_URL}/auth/refresh`, {
@@ -14,25 +52,22 @@ async function refreshAccessToken(token: {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        refreshToken: token.refreshToken,
-      }),
+      body: JSON.stringify({ refreshToken: token.refreshToken }),
     });
 
-    const data = await response.json();
+    const data: RefreshResponse = await response.json();
 
     if (!response.ok || !data.success) {
-      throw new Error(data.error?.message || 'Failed to refresh token');
+      throw new Error('RefreshAccessTokenError');
     }
 
     return {
       ...token,
       accessToken: data.data.accessToken,
-      refreshToken: data.data.refreshToken ?? token.refreshToken,
-      accessTokenExpires: Date.now() + 15 * 60 * 1000, // 15 minutes
+      refreshToken: data.data.refreshToken,
+      accessTokenExpires: Date.now() + 14 * 60 * 1000, // 14 minutes
     };
-  } catch (error) {
-    console.error('Error refreshing access token:', error);
+  } catch {
     return {
       ...token,
       error: 'RefreshAccessTokenError',
@@ -60,74 +95,70 @@ export const authOptions: NextAuthOptions = {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              emailOrPhone: credentials.email,
+              email: credentials.email,
               password: credentials.password,
             }),
           });
 
           const data: AuthResponse = await response.json();
 
-          if (!response.ok || !data.success || !data.data) {
-            throw new Error(data.error?.message || 'Invalid credentials');
+          if (!response.ok || !data.success) {
+            const errorData = data as unknown as {
+              error?: { message?: string };
+            };
+            throw new Error(errorData.error?.message || 'Login failed');
           }
 
-          const { user, accessToken, refreshToken } = data.data;
-
+          // Return user with tokens
           return {
-            id: user.id,
-            email: user.email,
-            name: user.fullName,
-            username: user.username,
-            image: user.avatarUrl,
-            isVerified: user.isVerified,
-            accessToken,
-            refreshToken,
+            ...data.data.user,
+            accessToken: data.data.accessToken,
+            refreshToken: data.data.refreshToken,
           };
         } catch (error) {
           if (error instanceof Error) {
             throw new Error(error.message);
           }
-          throw new Error('Authentication failed');
+          throw new Error('Login failed');
         }
       },
     }),
-    // Add OAuth providers here in the future
-    // GoogleProvider({
-    //   clientId: process.env.GOOGLE_CLIENT_ID!,
-    //   clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    // }),
   ],
   callbacks: {
-    async jwt({ token, user, trigger, session }) {
+    async jwt({ token, user }) {
       // Initial sign in
       if (user) {
-        return {
-          ...token,
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          username: user.username,
-          image: user.image,
-          isVerified: user.isVerified,
-          accessToken: user.accessToken,
-          refreshToken: user.refreshToken,
-          accessTokenExpires: Date.now() + 15 * 60 * 1000, // 15 minutes
+        const authUser = user as User & {
+          accessToken: string;
+          refreshToken: string;
         };
-      }
-
-      // Handle session update (e.g., after profile update)
-      if (trigger === 'update' && session) {
         return {
-          ...token,
-          ...session,
+          accessToken: authUser.accessToken,
+          refreshToken: authUser.refreshToken,
+          accessTokenExpires: Date.now() + 14 * 60 * 1000, // 14 minutes
+          user: {
+            id: authUser.id,
+            email: authUser.email,
+            phone: authUser.phone,
+            username: authUser.username,
+            fullName: authUser.fullName,
+            bio: authUser.bio,
+            avatarUrl: authUser.avatarUrl,
+            coverUrl: authUser.coverUrl,
+            location: authUser.location,
+            role: authUser.role,
+            isVerified: authUser.isVerified,
+            followersCount: authUser.followersCount,
+            followingCount: authUser.followingCount,
+            postsCount: authUser.postsCount,
+            createdAt: authUser.createdAt,
+            updatedAt: authUser.updatedAt,
+          },
         };
       }
 
       // Return previous token if the access token has not expired yet
-      if (
-        token.accessTokenExpires &&
-        Date.now() < token.accessTokenExpires
-      ) {
+      if (Date.now() < token.accessTokenExpires) {
         return token;
       }
 
@@ -135,18 +166,14 @@ export const authOptions: NextAuthOptions = {
       return refreshAccessToken(token);
     },
     async session({ session, token }) {
-      session.user = {
-        id: token.id,
-        email: token.email,
-        name: token.name,
-        username: token.username,
-        image: token.image,
-        isVerified: token.isVerified,
-      };
+      if (token.error) {
+        // Handle refresh error - redirect to login
+        throw new Error('RefreshAccessTokenError');
+      }
+
+      session.user = token.user;
       session.accessToken = token.accessToken;
       session.refreshToken = token.refreshToken;
-      session.error = token.error;
-
       return session;
     },
   },
@@ -159,5 +186,4 @@ export const authOptions: NextAuthOptions = {
     maxAge: 7 * 24 * 60 * 60, // 7 days
   },
   secret: process.env.NEXTAUTH_SECRET,
-  debug: process.env.NODE_ENV === 'development',
 };

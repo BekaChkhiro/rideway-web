@@ -1,49 +1,23 @@
-export interface User {
-  id: string;
-  email: string;
-  username: string;
-  fullName: string;
-  avatarUrl?: string;
-  coverUrl?: string;
-  bio?: string;
-  location?: string;
-  website?: string;
-  isVerified: boolean;
-  isFollowing?: boolean;
-  isFollowedBy?: boolean;
-  followersCount?: number;
-  followingCount?: number;
-  postsCount?: number;
-  createdAt: string;
-  updatedAt?: string;
-}
+// Auth Types
 
-export interface UpdateProfileData {
-  fullName?: string;
-  username?: string;
-  bio?: string;
-  location?: string;
-  website?: string;
-}
-
-export interface AuthTokens {
-  accessToken: string;
-  refreshToken: string;
-}
+import type { User } from './user';
 
 export interface LoginCredentials {
   email: string;
   password: string;
-  rememberMe?: boolean;
 }
 
 export interface RegisterData {
   email: string;
+  password: string;
   username: string;
   fullName: string;
-  password: string;
-  confirmPassword: string;
-  acceptTerms: boolean;
+  phone?: string;
+}
+
+export interface VerifyOtpData {
+  userId: string;
+  code: string;
 }
 
 export interface ForgotPasswordData {
@@ -51,37 +25,28 @@ export interface ForgotPasswordData {
 }
 
 export interface ResetPasswordData {
-  email: string;
+  userId: string;
   code: string;
-  password: string;
-  confirmPassword: string;
+  newPassword: string;
 }
 
-export interface VerifyOtpData {
-  email: string;
-  code: string;
+export interface AuthTokens {
+  accessToken: string;
+  refreshToken: string;
 }
 
 export interface AuthResponse {
-  success: boolean;
-  data?: {
-    user: User;
-    accessToken: string;
-    refreshToken: string;
-  };
-  error?: {
-    code: string;
-    message: string;
-    details?: unknown;
-  };
+  user: User;
+  accessToken: string;
+  refreshToken: string;
 }
 
-export interface ApiResponse<T = unknown> {
-  success: boolean;
-  data?: T;
-  error?: {
-    code: string;
-    message: string;
-    details?: unknown;
-  };
+export interface RegisterResponse {
+  userId: string;
+  message: string;
+}
+
+export interface RefreshResponse {
+  accessToken: string;
+  refreshToken: string;
 }

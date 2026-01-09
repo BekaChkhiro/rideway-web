@@ -1,100 +1,61 @@
 'use client';
 
-import { useEffect } from 'react';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/stores/auth-store';
+import { useCallback } from 'react';
+import { useAuthStore } from '@/stores';
+import { clearTokens } from '@/lib/api';
+import type { User } from '@/types';
 
 export function useAuth() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const { user, setUser, setLoading, logout: storeLogout } = useAuthStore();
+  const { setUser, logout: logoutStore } = useAuthStore();
 
   const isLoading = status === 'loading';
   const isAuthenticated = status === 'authenticated';
+  const user = session?.user as User | undefined;
 
-  // Sync session with Zustand store
-  useEffect(() => {
-    setLoading(isLoading);
-
-    if (session?.user) {
-      setUser({
-        id: session.user.id,
-        email: session.user.email,
-        name: session.user.name,
-        username: session.user.username,
-        image: session.user.image,
-        isVerified: session.user.isVerified,
+  // Login with credentials
+  const login = useCallback(
+    async (email: string, password: string, redirectTo = '/') => {
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
       });
-    } else if (status === 'unauthenticated') {
-      setUser(null);
-    }
-  }, [session, status, setUser, setLoading, isLoading]);
 
-  // Handle token refresh errors
-  useEffect(() => {
-    if (session?.error === 'RefreshAccessTokenError') {
-      // Session expired, logout user
-      signOut({ redirect: false }).then(() => {
-        router.push('/login?error=SessionExpired');
-      });
-    }
-  }, [session?.error, router]);
+      if (result?.error) {
+        throw new Error(result.error);
+      }
 
-  const login = async (email: string, password: string) => {
-    const result = await signIn('credentials', {
-      email,
-      password,
-      redirect: false,
-    });
+      if (result?.ok) {
+        router.push(redirectTo);
+        router.refresh();
+      }
+    },
+    [router]
+  );
 
-    if (result?.error) {
-      throw new Error(result.error);
-    }
-
-    router.refresh();
-    return result;
-  };
-
-  const logout = async () => {
-    storeLogout();
+  // Logout
+  const logout = useCallback(async () => {
+    clearTokens();
+    logoutStore();
     await signOut({ redirect: false });
     router.push('/login');
-  };
+  }, [router, logoutStore]);
+
+  // Update user in store when session changes
+  if (user && !isLoading) {
+    setUser(user);
+  }
 
   return {
-    user: session?.user ?? user,
+    user,
     isLoading,
     isAuthenticated,
-    accessToken: session?.accessToken,
+    session,
     login,
     logout,
-    session,
   };
-}
-
-export function useRequireAuth(redirectTo = '/login') {
-  const { isAuthenticated, isLoading } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.push(redirectTo);
-    }
-  }, [isAuthenticated, isLoading, router, redirectTo]);
-
-  return { isLoading, isAuthenticated };
-}
-
-export function useRedirectIfAuthenticated(redirectTo = '/feed') {
-  const { isAuthenticated, isLoading } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!isLoading && isAuthenticated) {
-      router.push(redirectTo);
-    }
-  }, [isAuthenticated, isLoading, router, redirectTo]);
-
-  return { isLoading, isAuthenticated };
 }
