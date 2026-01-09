@@ -43,7 +43,7 @@ git add . && git commit -m "short message" && git push
 
 | Component | Status | Progress |
 |-----------|--------|----------|
-| Backend (rideway-api) | 🔨 Auth + Users + Media + Posts + Stories + Chat Ready | 60% |
+| Backend (rideway-api) | 🔨 Auth + Users + Media + Posts + Stories + Chat + Notifications + Listings Ready | 75% |
 | Frontend (rideway-web) | ✅ Design Shell Ready | 20% |
 | Mobile | ⏳ Planned | 0% |
 
@@ -51,12 +51,12 @@ git add . && git commit -m "short message" && git push
 
 ## Current Task
 
-**Phase 3: Notifications Module (Next)**
+**Phase 5: Community Module (Next)**
 
 შემდეგი ნაბიჯი:
-1. [ ] Notifications service (create, get, mark as read)
-2. [ ] Notifications controller & routes
-3. [ ] Socket.io real-time notifications
+1. [ ] Forum module (categories, threads, replies)
+2. [ ] Services module (service providers, reviews)
+3. [ ] Socket.io setup (real-time features)
 
 ---
 
@@ -166,30 +166,51 @@ git add . && git commit -m "short message" && git push
   - [x] Build: ✅ წარმატებული
   - [x] Tested: create conversation ✅, send message ✅, get conversations ✅, get messages ✅, mark as read ✅, unread count ✅
 
+### Session 10 (2026-01-09)
+- [x] **Notifications Module დასრულდა:**
+  - [x] Notifications validators (Zod schemas: getNotifications, notificationId params)
+  - [x] Notifications service (getNotifications, getUnreadCount, markAsRead, markAllAsRead, deleteNotification, createNotification)
+  - [x] Notifications controller
+  - [x] Notifications routes (`/api/v1/notifications/*`)
+  - [x] Build: ✅ წარმატებული
+  - [x] Tested: get notifications ✅, unread count ✅, mark as read ✅, mark all as read ✅, delete ✅
+
+### Session 11 (2026-01-09)
+- [x] **Listings Module დასრულდა:**
+  - [x] Listings validators (Zod schemas: create, update, filters, search, pagination)
+  - [x] Listings service (CRUD, search, filters, favorites, mark as sold)
+  - [x] Listings controller
+  - [x] Listings routes (`/api/v1/listings/*`)
+  - [x] Categories support (hierarchical)
+  - [x] Build: ✅ წარმატებული
+  - [x] Tested: categories ✅, create listing ✅, get listings ✅, search ✅, popular ✅, favorites ✅, mark as sold ✅
+
 ---
 
 ## Next Tasks (Priority Order)
 
 ### Immediate (მიმდინარე)
-- [ ] **Notifications Module** (Phase 3)
-  - [ ] Notifications CRUD
-  - [ ] Mark as read
-  - [ ] Socket.io real-time
+- [ ] **Forum Module** (Phase 5)
+  - [ ] Forum categories
+  - [ ] Threads CRUD
+  - [ ] Replies
+  - [ ] Thread likes
 
 ### Phase 2: Social ✅
 - [x] Posts module (CRUD, likes, comments) ✅
 - [x] Stories module ✅
 - [x] Hashtags ✅
 
-### Phase 3: Communication
+### Phase 3: Communication ✅
 - [x] Chat module ✅
-- [ ] Notifications module
-- [ ] Socket.io setup
+- [x] Notifications module ✅
+- [ ] Socket.io setup (მოგვიანებით)
 
-### Phase 4: Marketplace
-- [ ] Listings module
-- [ ] Categories
-- [ ] Search + filters
+### Phase 4: Marketplace ✅
+- [x] Listings module ✅
+- [x] Categories ✅
+- [x] Search + filters ✅
+- [x] Favorites ✅
 
 ### Phase 5: Community
 - [ ] Forum module
@@ -239,7 +260,9 @@ rideway-api/
 │   │   ├── media.routes.ts # Media routes ✅
 │   │   ├── posts.routes.ts # Posts + Comments routes ✅
 │   │   ├── stories.routes.ts # Stories routes ✅
-│   │   └── chat.routes.ts  # Chat routes ✅
+│   │   ├── chat.routes.ts  # Chat routes ✅
+│   │   ├── notifications.routes.ts # Notifications routes ✅
+│   │   └── listings.routes.ts # Listings routes ✅
 │   ├── controllers/
 │   │   ├── auth.controller.ts ✅
 │   │   ├── users.controller.ts ✅
@@ -247,7 +270,9 @@ rideway-api/
 │   │   ├── posts.controller.ts ✅
 │   │   ├── comments.controller.ts ✅
 │   │   ├── stories.controller.ts ✅
-│   │   └── chat.controller.ts ✅
+│   │   ├── chat.controller.ts ✅
+│   │   ├── notifications.controller.ts ✅
+│   │   └── listings.controller.ts ✅
 │   ├── services/
 │   │   ├── auth.service.ts ✅
 │   │   ├── users.service.ts ✅
@@ -255,13 +280,17 @@ rideway-api/
 │   │   ├── posts.service.ts ✅
 │   │   ├── comments.service.ts ✅
 │   │   ├── stories.service.ts ✅
-│   │   └── chat.service.ts ✅
+│   │   ├── chat.service.ts ✅
+│   │   ├── notifications.service.ts ✅
+│   │   └── listings.service.ts ✅
 │   ├── validators/
 │   │   ├── auth.ts         # Auth Zod schemas ✅
 │   │   ├── users.ts        # Users Zod schemas ✅
 │   │   ├── posts.ts        # Posts + Comments Zod schemas ✅
 │   │   ├── stories.ts      # Stories Zod schemas ✅
-│   │   └── chat.ts         # Chat Zod schemas ✅
+│   │   ├── chat.ts         # Chat Zod schemas ✅
+│   │   ├── notifications.ts # Notifications Zod schemas ✅
+│   │   └── listings.ts     # Listings Zod schemas ✅
 │   ├── types/
 │   │   ├── api.ts          # API response types
 │   │   └── express.d.ts    # Express extensions
@@ -389,6 +418,58 @@ rideway-api/
 
 ---
 
+## Notifications Module API
+
+| Endpoint | Method | Auth | Description |
+|----------|--------|------|-------------|
+| `/api/v1/notifications` | GET | ✅ | ნოტიფიკაციების სია (paginated) |
+| `/api/v1/notifications/unread` | GET | ✅ | წაუკითხავების რაოდენობა |
+| `/api/v1/notifications/:id/read` | POST | ✅ | ერთის წაკითხულად მონიშვნა |
+| `/api/v1/notifications/read-all` | POST | ✅ | ყველას წაკითხულად მონიშვნა |
+| `/api/v1/notifications/:id` | DELETE | ✅ | ნოტიფიკაციის წაშლა |
+
+**Notification Types:**
+- NEW_FOLLOWER
+- POST_LIKE
+- POST_COMMENT
+- COMMENT_REPLY
+- NEW_MESSAGE
+- THREAD_REPLY
+- LISTING_INQUIRY
+- SERVICE_REVIEW
+- STORY_VIEW
+
+---
+
+## Listings Module API
+
+| Endpoint | Method | Auth | Description |
+|----------|--------|------|-------------|
+| `/api/v1/listings/categories` | GET | - | კატეგორიების სია |
+| `/api/v1/listings` | GET | opt | განცხადებების სია (filters) |
+| `/api/v1/listings` | POST | ✅ | განცხადების შექმნა |
+| `/api/v1/listings/search?q=` | GET | opt | ძებნა |
+| `/api/v1/listings/popular` | GET | opt | პოპულარული |
+| `/api/v1/listings/user/:userId` | GET | opt | მომხმარებლის განცხადებები |
+| `/api/v1/listings/favorites` | GET | ✅ | ჩემი ფავორიტები |
+| `/api/v1/listings/:id` | GET | opt | ერთი განცხადება |
+| `/api/v1/listings/:id` | PATCH | ✅ | განცხადების რედაქტირება |
+| `/api/v1/listings/:id` | DELETE | ✅ | განცხადების წაშლა |
+| `/api/v1/listings/:id/sold` | POST | ✅ | გაყიდულად მონიშვნა |
+| `/api/v1/listings/:id/favorite` | POST | ✅ | ფავორიტებში დამატება |
+| `/api/v1/listings/:id/favorite` | DELETE | ✅ | ფავორიტებიდან წაშლა |
+
+**Listing Features:**
+- CRUD operations
+- Hierarchical categories
+- Search + filters (category, price range, condition, location, brand)
+- Favorites (save/unsave)
+- Mark as sold
+- View count tracking
+- Image upload (max 20 images, 10MB each)
+
+---
+
 ## Notes
 
 ### Session 1 Notes:
@@ -430,7 +511,9 @@ rideway-api/
 | 2026-01-09 | #7 | Posts + Comments module: CRUD, likes, hashtags, feed, trending |
 | 2026-01-09 | #8 | Stories module: CRUD, 24h expiry, feed grouped by user, view tracking |
 | 2026-01-09 | #9 | Chat module: conversations, messages, unread count, mark as read |
+| 2026-01-09 | #10 | Notifications module: CRUD, unread count, mark as read |
+| 2026-01-09 | #11 | Listings module: CRUD, categories, search, filters, favorites |
 
 ---
 
-*Last updated: 2026-01-09 - Session #9*
+*Last updated: 2026-01-09 - Session #11*
