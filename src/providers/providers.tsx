@@ -3,6 +3,7 @@
 import { ThemeProvider } from './theme-provider';
 import { QueryProvider } from './query-provider';
 import { AuthProvider } from './auth-provider';
+import { SocketProvider } from './socket-provider';
 import { Toaster } from 'sonner';
 
 interface ProvidersProps {
@@ -19,7 +20,9 @@ export function Providers({ children }: ProvidersProps) {
         disableTransitionOnChange
       >
         <QueryProvider>
-          {children}
+          <SocketProvider>
+            {children}
+          </SocketProvider>
           <Toaster position="top-center" richColors closeButton />
         </QueryProvider>
       </ThemeProvider>

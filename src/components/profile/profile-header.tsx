@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { FollowButton } from './follow-button';
 import { EditProfileModal } from './edit-profile-modal';
+import { MessageButton } from '@/components/chat';
 import type { UserProfile } from '@/types';
 
 interface ProfileHeaderProps {
@@ -135,12 +136,16 @@ export function ProfileHeader({ user, isOwnProfile }: ProfileHeaderProps) {
               </Button>
             ) : (
               <>
-                {!user.isBlockedBy && (
-                  <FollowButton
-                    userId={user.id}
-                    isFollowing={user.isFollowing || false}
-                  />
+                {!user.isBlockedBy && !user.isBlocked && (
+                  <>
+                    <FollowButton
+                      userId={user.id}
+                      isFollowing={user.isFollowing || false}
+                    />
+                    <MessageButton userId={user.id} />
+                  </>
                 )}
+                {!user.isBlockedBy && user.isBlocked && null}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon">

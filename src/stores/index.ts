@@ -2,3 +2,10 @@
 
 export { useAuthStore } from './auth.store';
 export { useUIStore } from './ui.store';
+export {
+  useChatStore,
+  selectActiveConversation,
+  selectActiveMessages,
+  selectTypingInConversation,
+  selectIsUserOnline,
+} from './chat.store';
