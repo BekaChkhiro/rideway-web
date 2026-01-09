@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils';
 
 interface PageHeaderProps {
   title: string;
-  description?: string;
+  description?: ReactNode;
   showBack?: boolean;
   backHref?: string;
   actions?: ReactNode;
@@ -90,7 +90,7 @@ export function PageHeader({
               {title}
             </h1>
             {description && (
-              <p className="text-muted-foreground leading-relaxed">{description}</p>
+              <div className="text-muted-foreground leading-relaxed">{description}</div>
             )}
           </div>
         </div>

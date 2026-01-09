@@ -9,3 +9,5 @@ export * from './stories';
 export * from './chat';
 export * from './notifications';
 export * from './listings';
+export * from './forum';
+export * from './services';
