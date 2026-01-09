@@ -46,8 +46,9 @@ export interface UserAvatarUser {
   username?: string;
   fullName?: string;
   name?: string;
-  avatarUrl?: string;
-  image?: string;
+  avatarUrl?: string | null;
+  image?: string | null;
+  bio?: string | null;
 }
 
 export interface UserAvatarProps
@@ -76,7 +77,7 @@ export function UserAvatar({
   fallbackClassName,
 }: UserAvatarProps) {
   // Resolve values from user object or individual props
-  const avatarSrc = src || user?.avatarUrl || user?.image;
+  const avatarSrc = src || user?.avatarUrl || user?.image || undefined;
   const displayName = name || user?.fullName || user?.name || user?.username || 'User';
   const profileUsername = username || user?.username;
 
