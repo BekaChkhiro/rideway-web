@@ -43,7 +43,7 @@ git add . && git commit -m "short message" && git push
 
 | Component | Status | Progress |
 |-----------|--------|----------|
-| Backend (rideway-api) | 🔨 Auth + Users + Media + Posts + Stories + Chat + Notifications + Listings Ready | 75% |
+| Backend (rideway-api) | 🔨 Auth + Users + Media + Posts + Stories + Chat + Notifications + Listings + Forum + Services Ready | 85% |
 | Frontend (rideway-web) | ✅ Design Shell Ready | 20% |
 | Mobile | ⏳ Planned | 0% |
 
@@ -51,12 +51,15 @@ git add . && git commit -m "short message" && git push
 
 ## Current Task
 
-**Phase 5: Community Module (Next)**
+**Phase 5: Community Module (Complete) ✅**
 
-შემდეგი ნაბიჯი:
-1. [ ] Forum module (categories, threads, replies)
-2. [ ] Services module (service providers, reviews)
+დასრულდა:
+1. [x] Forum module (categories, threads, replies) ✅
+2. [x] Services module (service providers, reviews) ✅
+
+შემდეგი:
 3. [ ] Socket.io setup (real-time features)
+4. [ ] Admin API
 
 ---
 
@@ -185,16 +188,37 @@ git add . && git commit -m "short message" && git push
   - [x] Build: ✅ წარმატებული
   - [x] Tested: categories ✅, create listing ✅, get listings ✅, search ✅, popular ✅, favorites ✅, mark as sold ✅
 
+### Session 12 (2026-01-09)
+- [x] **Forum Module დასრულდა:**
+  - [x] Forum validators (Zod schemas: createThread, updateThread, createReply, updateReply, pagination)
+  - [x] Forum service (categories, threads CRUD, replies CRUD, likes for threads and replies)
+  - [x] Forum controller
+  - [x] Forum routes (`/api/v1/forum/*`)
+  - [x] Thread/Reply likes with count tracking
+  - [x] Notifications on thread replies
+  - [x] Build: ✅ წარმატებული
+- [x] **Services Module დასრულდა:**
+  - [x] Services validators (Zod schemas: create, update, search, reviews)
+  - [x] Services service (CRUD, search, reviews, rating calculation)
+  - [x] Services controller
+  - [x] Services routes (`/api/v1/services/*`)
+  - [x] Review system with rating aggregation
+  - [x] Notifications on service reviews
+  - [x] Image upload support
+  - [x] Build: ✅ წარმატებული
+
 ---
 
 ## Next Tasks (Priority Order)
 
 ### Immediate (მიმდინარე)
-- [ ] **Forum Module** (Phase 5)
-  - [ ] Forum categories
-  - [ ] Threads CRUD
-  - [ ] Replies
-  - [ ] Thread likes
+- [ ] **Socket.io Setup** (Real-time)
+  - [ ] Chat real-time messaging
+  - [ ] Typing indicators
+  - [ ] Online status
+- [ ] **Admin API** (Phase 6)
+  - [ ] User management
+  - [ ] Content moderation
 
 ### Phase 2: Social ✅
 - [x] Posts module (CRUD, likes, comments) ✅
@@ -212,10 +236,10 @@ git add . && git commit -m "short message" && git push
 - [x] Search + filters ✅
 - [x] Favorites ✅
 
-### Phase 5: Community
-- [ ] Forum module
-- [ ] Services module
-- [ ] Reviews
+### Phase 5: Community ✅
+- [x] Forum module ✅
+- [x] Services module ✅
+- [x] Reviews ✅
 
 ### Phase 6: Admin
 - [ ] Admin API
@@ -262,7 +286,9 @@ rideway-api/
 │   │   ├── stories.routes.ts # Stories routes ✅
 │   │   ├── chat.routes.ts  # Chat routes ✅
 │   │   ├── notifications.routes.ts # Notifications routes ✅
-│   │   └── listings.routes.ts # Listings routes ✅
+│   │   ├── listings.routes.ts # Listings routes ✅
+│   │   ├── forum.routes.ts # Forum routes ✅
+│   │   └── services.routes.ts # Services routes ✅
 │   ├── controllers/
 │   │   ├── auth.controller.ts ✅
 │   │   ├── users.controller.ts ✅
@@ -272,7 +298,9 @@ rideway-api/
 │   │   ├── stories.controller.ts ✅
 │   │   ├── chat.controller.ts ✅
 │   │   ├── notifications.controller.ts ✅
-│   │   └── listings.controller.ts ✅
+│   │   ├── listings.controller.ts ✅
+│   │   ├── forum.controller.ts ✅
+│   │   └── services.controller.ts ✅
 │   ├── services/
 │   │   ├── auth.service.ts ✅
 │   │   ├── users.service.ts ✅
@@ -282,7 +310,9 @@ rideway-api/
 │   │   ├── stories.service.ts ✅
 │   │   ├── chat.service.ts ✅
 │   │   ├── notifications.service.ts ✅
-│   │   └── listings.service.ts ✅
+│   │   ├── listings.service.ts ✅
+│   │   ├── forum.service.ts ✅
+│   │   └── services.service.ts ✅
 │   ├── validators/
 │   │   ├── auth.ts         # Auth Zod schemas ✅
 │   │   ├── users.ts        # Users Zod schemas ✅
@@ -290,7 +320,9 @@ rideway-api/
 │   │   ├── stories.ts      # Stories Zod schemas ✅
 │   │   ├── chat.ts         # Chat Zod schemas ✅
 │   │   ├── notifications.ts # Notifications Zod schemas ✅
-│   │   └── listings.ts     # Listings Zod schemas ✅
+│   │   ├── listings.ts     # Listings Zod schemas ✅
+│   │   ├── forum.ts        # Forum Zod schemas ✅
+│   │   └── services.ts     # Services Zod schemas ✅
 │   ├── types/
 │   │   ├── api.ts          # API response types
 │   │   └── express.d.ts    # Express extensions
@@ -470,6 +502,61 @@ rideway-api/
 
 ---
 
+## Forum Module API
+
+| Endpoint | Method | Auth | Description |
+|----------|--------|------|-------------|
+| `/api/v1/forum/categories` | GET | - | კატეგორიების სია |
+| `/api/v1/forum/threads` | GET | opt | თემების სია (filters) |
+| `/api/v1/forum/threads` | POST | ✅ | თემის შექმნა |
+| `/api/v1/forum/threads/:id` | GET | opt | ერთი თემა |
+| `/api/v1/forum/threads/:id` | PATCH | ✅ | თემის რედაქტირება |
+| `/api/v1/forum/threads/:id` | DELETE | ✅ | თემის წაშლა |
+| `/api/v1/forum/threads/:id/like` | POST | ✅ | თემის ლაიქი (toggle) |
+| `/api/v1/forum/threads/:id/replies` | GET | opt | თემის პასუხები |
+| `/api/v1/forum/threads/:id/replies` | POST | ✅ | პასუხის დამატება |
+| `/api/v1/forum/replies/:replyId` | PATCH | ✅ | პასუხის რედაქტირება |
+| `/api/v1/forum/replies/:replyId` | DELETE | ✅ | პასუხის წაშლა |
+| `/api/v1/forum/replies/:replyId/like` | POST | ✅ | პასუხის ლაიქი (toggle) |
+
+**Forum Features:**
+- Categories with thread counts
+- Threads CRUD with likes
+- Replies CRUD with likes
+- Pinned/locked threads support
+- Notifications on replies
+- Sort by: latest, oldest, popular, most_replies
+
+---
+
+## Services Module API
+
+| Endpoint | Method | Auth | Description |
+|----------|--------|------|-------------|
+| `/api/v1/services/categories` | GET | - | კატეგორიების სია |
+| `/api/v1/services` | GET | - | სერვისების სია (filters) |
+| `/api/v1/services` | POST | ✅ | სერვისის შექმნა |
+| `/api/v1/services/search?q=` | GET | - | ძებნა |
+| `/api/v1/services/user/:userId` | GET | - | მომხმარებლის სერვისები |
+| `/api/v1/services/:id` | GET | - | ერთი სერვისი |
+| `/api/v1/services/:id` | PATCH | ✅ | სერვისის რედაქტირება |
+| `/api/v1/services/:id` | DELETE | ✅ | სერვისის წაშლა |
+| `/api/v1/services/:id/reviews` | GET | - | სერვისის რევიუები |
+| `/api/v1/services/:id/reviews` | POST | ✅ | რევიუს დამატება |
+| `/api/v1/services/:id/reviews` | DELETE | ✅ | საკუთარი რევიუს წაშლა |
+
+**Services Features:**
+- CRUD operations
+- Categories with service counts
+- Search by name, description, location
+- Reviews with 1-5 star rating
+- Automatic rating calculation
+- Notifications on reviews
+- Image upload (max 10 images, 10MB each)
+- Verified services support
+
+---
+
 ## Notes
 
 ### Session 1 Notes:
@@ -513,7 +600,8 @@ rideway-api/
 | 2026-01-09 | #9 | Chat module: conversations, messages, unread count, mark as read |
 | 2026-01-09 | #10 | Notifications module: CRUD, unread count, mark as read |
 | 2026-01-09 | #11 | Listings module: CRUD, categories, search, filters, favorites |
+| 2026-01-09 | #12 | Forum + Services modules: threads, replies, reviews, ratings |
 
 ---
 
-*Last updated: 2026-01-09 - Session #11*
+*Last updated: 2026-01-09 - Session #12*
