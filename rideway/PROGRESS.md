@@ -44,35 +44,48 @@ git add . && git commit -m "short message" && git push
 | Component | Status | Progress |
 |-----------|--------|----------|
 | Backend (rideway-api) | ✅ ALL MODULES COMPLETE (Auth + Users + Media + Posts + Stories + Chat + Notifications + Listings + Forum + Services + Socket.io + Admin) | 100% |
-| Frontend (rideway-web) | ✅ Setup Phase Complete | 30% |
+| Frontend (rideway-web) | 🔨 Profile & Settings Complete | 55% |
 | Mobile | ⏳ Planned | 0% |
 
 ---
 
 ## Current Task
 
-**Phase 7: Frontend Integration - SETUP COMPLETE ✅**
+**Phase 7: Frontend Integration - PROFILE & USERS COMPLETE ✅**
 
 დასრულდა:
 1. [x] Frontend გეგმის შექმნა (`docs/FRONTEND_PLAN.md`) ✅
 2. [x] CLAUDE.md განახლება Frontend სექციით ✅
 3. [x] MVP_PLAN.md განახლება ✅
 4. [x] **Frontend Setup Phase** ✅
-   - [x] TypeScript types (`types/*.ts`)
-   - [x] API client (`lib/api/client.ts`)
-   - [x] NextAuth.js config (`lib/auth/config.ts`)
-   - [x] Auth API functions (`lib/api/auth.ts`, `lib/api/users.ts`, `lib/api/media.ts`)
-   - [x] Zustand stores (`stores/auth.store.ts`, `stores/ui.store.ts`)
-   - [x] Providers updated with SessionProvider
-   - [x] useAuth hook
+5. [x] **Auth Pages (Phase 1)** ✅
+6. [x] **Profile & Users (Phase 2)** ✅
+   - [x] Main layout (`app/(main)/layout.tsx`)
+   - [x] Profile page (`app/(main)/[username]/page.tsx`)
+   - [x] Profile header component (`components/profile/profile-header.tsx`)
+   - [x] Profile tabs component (`components/profile/profile-tabs.tsx`)
+   - [x] Follow button component (`components/profile/follow-button.tsx`)
+   - [x] User card component (`components/profile/user-card.tsx`)
+   - [x] User list component (`components/profile/user-list.tsx`)
+   - [x] Edit profile modal (`components/profile/edit-profile-modal.tsx`)
+   - [x] Followers page (`app/(main)/[username]/followers/page.tsx`)
+   - [x] Following page (`app/(main)/[username]/following/page.tsx`)
+   - [x] Settings layout (`app/(main)/settings/layout.tsx`)
+   - [x] Settings - Profile page
+   - [x] Settings - Account page
+   - [x] Settings - Privacy page
+   - [x] Settings - Security page
+   - [x] Settings - Notifications page
+   - [x] Settings - Blocked Users page
    - [x] Build: ✅ წარმატებული
 
-**შემდეგი: Auth Pages Implementation (Phase 1)**
-- Login page + form
-- Register page + form
-- OTP verification page
-- Forgot/reset password pages
-- Protected route middleware
+**შემდეგი: Feed & Posts (Phase 3)**
+- Posts API functions
+- Feed page with infinite scroll
+- Post card component
+- Create post form
+- Comments system
+- Stories (create, view, carousel)
 
 ---
 
@@ -273,6 +286,36 @@ git add . && git commit -m "short message" && git push
   - [x] Settings pages გასუფთავდა (placeholders)
   - [x] Build: ✅ წარმატებული
 
+### Session 17 (2026-01-09)
+- [x] **Auth Pages დასრულდა:**
+  - [x] Auth layout (`app/(auth)/layout.tsx`)
+  - [x] Validation schemas (`lib/validations/auth.ts`) - Zod schemas for all forms
+  - [x] Login page + form (`/login`, `components/auth/login-form.tsx`)
+  - [x] Register page + form (`/register`, `components/auth/register-form.tsx`)
+  - [x] OTP verification page (`/verify`, `components/auth/otp-form.tsx`)
+  - [x] Forgot password page (`/forgot-password`, `components/auth/forgot-password-form.tsx`)
+  - [x] Reset password page (`/reset-password`, `components/auth/reset-password-form.tsx`)
+  - [x] Protected route middleware (`middleware.ts`)
+  - [x] Build: ✅ წარმატებული
+
+### Session 18 (2026-01-09)
+- [x] **Profile & Users (Phase 2) დასრულდა:**
+  - [x] Main layout (`app/(main)/layout.tsx`)
+  - [x] Profile page (`app/(main)/[username]/page.tsx`)
+  - [x] Profile components (`components/profile/`):
+    - [x] profile-header.tsx
+    - [x] profile-tabs.tsx
+    - [x] follow-button.tsx
+    - [x] user-card.tsx
+    - [x] user-list.tsx
+    - [x] edit-profile-modal.tsx
+    - [x] index.ts
+  - [x] Followers page (`app/(main)/[username]/followers/page.tsx`)
+  - [x] Following page (`app/(main)/[username]/following/page.tsx`)
+  - [x] Settings layout (`app/(main)/settings/layout.tsx`)
+  - [x] Settings pages (profile, account, privacy, security, notifications, blocked)
+  - [x] Build: ✅ წარმატებული
+
 ---
 
 ## Next Tasks (Priority Order)
@@ -303,25 +346,25 @@ git add . && git commit -m "short message" && git push
 - [x] Services module ✅
 - [x] Reviews ✅
 
-### Phase 6: Admin & Real-time ✅ (partial)
+### Phase 6: Admin & Real-time ✅
 - [x] Socket.io (real-time chat, typing, online status) ✅
-- [ ] Admin API
-- [ ] Moderation
+- [x] Admin API ✅
+- [x] Moderation ✅
 
 ### Phase 7: Frontend Integration (საიტის დასრულება)
 
 > **დეტალური გეგმა:** `docs/FRONTEND_PLAN.md`
 
-**Setup Phase:**
-- [ ] API client + React Query configuration
-- [ ] NextAuth.js setup (JWT strategy)
-- [ ] Zustand stores (auth, UI)
+**Setup Phase:** ✅
+- [x] API client + React Query configuration ✅
+- [x] NextAuth.js setup (JWT strategy) ✅
+- [x] Zustand stores (auth, UI) ✅
 - [ ] Socket.io client integration
 
 **Implementation Phases:**
-- [ ] Phase 1: Auth (login, register, verify, password reset)
-- [ ] Phase 2: Profile (view, edit, follow system)
-- [ ] Phase 3: Feed (posts, stories, comments)
+- [x] Phase 1: Auth (login, register, verify, password reset) ✅
+- [x] Phase 2: Profile (view, edit, follow system) ✅
+- [ ] Phase 3: Feed (posts, stories, comments) ← **შემდეგი**
 - [ ] Phase 4: Chat (conversations, real-time)
 - [ ] Phase 5: Marketplace (listings, search, favorites)
 - [ ] Phase 6: Forum (threads, replies)
@@ -770,7 +813,9 @@ socket.emit('chat:sendMessage', {
 | 2026-01-09 | #14 | Admin module: user management, content moderation, dashboard stats |
 | 2026-01-09 | #15 | Frontend planning: FRONTEND_PLAN.md, CLAUDE.md, MVP_PLAN.md updates |
 | 2026-01-09 | #16 | Frontend setup: types, API client, NextAuth, stores, providers |
+| 2026-01-09 | #17 | Auth pages: login, register, verify, forgot/reset password, middleware |
+| 2026-01-09 | #18 | Profile & Users: profile page, components, settings pages, followers/following |
 
 ---
 
-*Last updated: 2026-01-09 - Session #16*
+*Last updated: 2026-01-09 - Session #18*
