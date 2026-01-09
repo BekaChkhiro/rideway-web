@@ -43,7 +43,7 @@ git add . && git commit -m "short message" && git push
 
 | Component | Status | Progress |
 |-----------|--------|----------|
-| Backend (rideway-api) | 🔨 Auth + Users + Media + Posts + Stories + Chat + Notifications + Listings + Forum + Services + Socket.io Ready | 90% |
+| Backend (rideway-api) | ✅ ALL MODULES COMPLETE (Auth + Users + Media + Posts + Stories + Chat + Notifications + Listings + Forum + Services + Socket.io + Admin) | 100% |
 | Frontend (rideway-web) | ✅ Design Shell Ready | 20% |
 | Mobile | ⏳ Planned | 0% |
 
@@ -51,13 +51,13 @@ git add . && git commit -m "short message" && git push
 
 ## Current Task
 
-**Phase 6: Real-time & Admin (In Progress)**
+**Phase 6: Real-time & Admin - COMPLETED ✅**
 
 დასრულდა:
 1. [x] Socket.io setup (real-time chat, typing, online status) ✅
+2. [x] Admin API (user management, content moderation) ✅
 
-შემდეგი:
-2. [ ] Admin API (user management, content moderation)
+**შემდეგი: Phase 7 - Frontend Integration**
 
 ---
 
@@ -216,14 +216,29 @@ git add . && git commit -m "short message" && git push
   - [x] Utility functions (emitToUser, emitToConversation, isUserOnline)
   - [x] Build: ✅ წარმატებული
 
+### Session 14 (2026-01-09)
+- [x] **Admin Module დასრულდა:**
+  - [x] Admin validators (Zod schemas: getUsers, changeRole, ban/unban, content queries)
+  - [x] Admin service (user management, content moderation, dashboard stats)
+  - [x] Admin controller
+  - [x] Admin routes (`/api/v1/admin/*`)
+  - [x] Role-based access (ADMIN + MODERATOR)
+  - [x] User management: list, get, change role, ban/unban, delete
+  - [x] Content moderation: posts, comments, listings, forum threads
+  - [x] Forum moderation: pin/unpin, lock/unlock threads
+  - [x] Dashboard stats: users, content, activity metrics
+  - [x] DB Schema updates: isBanned, bannedAt, bannedUntil, banReason, lastLoginAt (User); isDeleted (Comment)
+  - [x] Build: ✅ წარმატებული
+  - [x] Tested: dashboard ✅, users ✅, posts ✅, listings ✅
+
 ---
 
 ## Next Tasks (Priority Order)
 
-### Immediate (მიმდინარე)
-- [ ] **Admin API** (Phase 6)
-  - [ ] User management
-  - [ ] Content moderation
+### Phase 6: Admin & Real-time ✅
+- [x] Socket.io (real-time chat, typing, online status) ✅
+- [x] Admin API ✅
+- [x] Content moderation ✅
 
 ### Phase 2: Social ✅
 - [x] Posts module (CRUD, likes, comments) ✅
@@ -298,7 +313,8 @@ rideway-api/
 │   │   ├── notifications.routes.ts # Notifications routes ✅
 │   │   ├── listings.routes.ts # Listings routes ✅
 │   │   ├── forum.routes.ts # Forum routes ✅
-│   │   └── services.routes.ts # Services routes ✅
+│   │   ├── services.routes.ts # Services routes ✅
+│   │   └── admin.routes.ts # Admin routes ✅
 │   ├── controllers/
 │   │   ├── auth.controller.ts ✅
 │   │   ├── users.controller.ts ✅
@@ -310,7 +326,8 @@ rideway-api/
 │   │   ├── notifications.controller.ts ✅
 │   │   ├── listings.controller.ts ✅
 │   │   ├── forum.controller.ts ✅
-│   │   └── services.controller.ts ✅
+│   │   ├── services.controller.ts ✅
+│   │   └── admin.controller.ts ✅
 │   ├── services/
 │   │   ├── auth.service.ts ✅
 │   │   ├── users.service.ts ✅
@@ -322,7 +339,8 @@ rideway-api/
 │   │   ├── notifications.service.ts ✅
 │   │   ├── listings.service.ts ✅
 │   │   ├── forum.service.ts ✅
-│   │   └── services.service.ts ✅
+│   │   ├── services.service.ts ✅
+│   │   └── admin.service.ts ✅
 │   ├── validators/
 │   │   ├── auth.ts         # Auth Zod schemas ✅
 │   │   ├── users.ts        # Users Zod schemas ✅
@@ -332,7 +350,8 @@ rideway-api/
 │   │   ├── notifications.ts # Notifications Zod schemas ✅
 │   │   ├── listings.ts     # Listings Zod schemas ✅
 │   │   ├── forum.ts        # Forum Zod schemas ✅
-│   │   └── services.ts     # Services Zod schemas ✅
+│   │   ├── services.ts     # Services Zod schemas ✅
+│   │   └── admin.ts        # Admin Zod schemas ✅
 │   ├── types/
 │   │   ├── api.ts          # API response types
 │   │   └── express.d.ts    # Express extensions
@@ -624,6 +643,35 @@ socket.emit('chat:sendMessage', {
 
 ---
 
+## Admin Module API
+
+| Endpoint | Method | Auth | Description |
+|----------|--------|------|-------------|
+| `/api/v1/admin/dashboard` | GET | ADMIN/MOD | Dashboard სტატისტიკა |
+| `/api/v1/admin/users` | GET | ADMIN/MOD | მომხმარებლების სია (filters) |
+| `/api/v1/admin/users/:id` | GET | ADMIN/MOD | მომხმარებლის დეტალები |
+| `/api/v1/admin/users/:id/role` | PATCH | ADMIN | როლის შეცვლა |
+| `/api/v1/admin/users/:id/ban` | POST | ADMIN/MOD | მომხმარებლის დაბლოკვა |
+| `/api/v1/admin/users/:id/unban` | POST | ADMIN/MOD | ბლოკის მოხსნა |
+| `/api/v1/admin/users/:id` | DELETE | ADMIN | მომხმარებლის წაშლა |
+| `/api/v1/admin/posts` | GET | ADMIN/MOD | პოსტების სია |
+| `/api/v1/admin/posts/:id` | DELETE | ADMIN/MOD | პოსტის წაშლა |
+| `/api/v1/admin/comments` | GET | ADMIN/MOD | კომენტარების სია |
+| `/api/v1/admin/comments/:id` | DELETE | ADMIN/MOD | კომენტარის წაშლა |
+| `/api/v1/admin/listings` | GET | ADMIN/MOD | განცხადებების სია |
+| `/api/v1/admin/listings/:id` | DELETE | ADMIN/MOD | განცხადების წაშლა |
+| `/api/v1/admin/forum/threads` | GET | ADMIN/MOD | ფორუმის თემები |
+| `/api/v1/admin/forum/threads/:id` | DELETE | ADMIN/MOD | თემის წაშლა |
+| `/api/v1/admin/forum/threads/:id/pin` | POST | ADMIN/MOD | თემის pin/unpin |
+| `/api/v1/admin/forum/threads/:id/lock` | POST | ADMIN/MOD | თემის lock/unlock |
+
+**Dashboard Stats:**
+- Users: total, newToday, newThisWeek, banned
+- Content: posts, comments, listings, forumThreads, services
+- Activity: postsToday, messagesToday, newListingsToday
+
+---
+
 ## Notes
 
 ### Session 1 Notes:
@@ -669,7 +717,8 @@ socket.emit('chat:sendMessage', {
 | 2026-01-09 | #11 | Listings module: CRUD, categories, search, filters, favorites |
 | 2026-01-09 | #12 | Forum + Services modules: threads, replies, reviews, ratings |
 | 2026-01-09 | #13 | Socket.io: real-time chat, typing indicators, online status, Redis adapter |
+| 2026-01-09 | #14 | Admin module: user management, content moderation, dashboard stats |
 
 ---
 
-*Last updated: 2026-01-09 - Session #13*
+*Last updated: 2026-01-09 - Session #14*
