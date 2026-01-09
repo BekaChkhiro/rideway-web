@@ -51,13 +51,18 @@ git add . && git commit -m "short message" && git push
 
 ## Current Task
 
-**Phase 6: Real-time & Admin - COMPLETED ✅**
+**Phase 7: Frontend Integration - PLANNING COMPLETE ✅**
 
 დასრულდა:
-1. [x] Socket.io setup (real-time chat, typing, online status) ✅
-2. [x] Admin API (user management, content moderation) ✅
+1. [x] Frontend გეგმის შექმნა (`docs/FRONTEND_PLAN.md`) ✅
+2. [x] CLAUDE.md განახლება Frontend სექციით ✅
+3. [x] MVP_PLAN.md განახლება ✅
 
-**შემდეგი: Phase 7 - Frontend Integration**
+**შემდეგი: Frontend Setup Phase**
+- API client + React Query configuration
+- NextAuth.js setup
+- Zustand stores
+- Socket.io client
 
 ---
 
@@ -231,6 +236,18 @@ git add . && git commit -m "short message" && git push
   - [x] Build: ✅ წარმატებული
   - [x] Tested: dashboard ✅, users ✅, posts ✅, listings ✅
 
+### Session 15 (2026-01-09)
+- [x] **Frontend Planning დასრულდა:**
+  - [x] `docs/FRONTEND_PLAN.md` შეიქმნა (სრული frontend გეგმა)
+  - [x] Project structure (lib/, stores/, hooks/, types/, components/)
+  - [x] API client architecture (React Query + Axios)
+  - [x] State management (Zustand stores)
+  - [x] 7 implementation phases (Auth → Profile → Feed → Chat → Marketplace → Forum → Admin)
+  - [x] Component specifications (pages, forms, UI elements)
+  - [x] Socket.io client integration plan
+  - [x] CLAUDE.md განახლება (Quick Start, Documentation Map)
+  - [x] MVP_PLAN.md განახლება (Phase 6 details)
+
 ---
 
 ## Next Tasks (Priority Order)
@@ -267,15 +284,23 @@ git add . && git commit -m "short message" && git push
 - [ ] Moderation
 
 ### Phase 7: Frontend Integration (საიტის დასრულება)
-- [ ] API client setup
-- [ ] Auth pages (login, register, verify, forgot-password)
-- [ ] Profile pages
-- [ ] Feed page
-- [ ] Marketplace pages
-- [ ] Forum pages
-- [ ] Chat pages
-- [ ] Settings pages
-- [ ] Admin panel
+
+> **დეტალური გეგმა:** `docs/FRONTEND_PLAN.md`
+
+**Setup Phase:**
+- [ ] API client + React Query configuration
+- [ ] NextAuth.js setup (JWT strategy)
+- [ ] Zustand stores (auth, UI)
+- [ ] Socket.io client integration
+
+**Implementation Phases:**
+- [ ] Phase 1: Auth (login, register, verify, password reset)
+- [ ] Phase 2: Profile (view, edit, follow system)
+- [ ] Phase 3: Feed (posts, stories, comments)
+- [ ] Phase 4: Chat (conversations, real-time)
+- [ ] Phase 5: Marketplace (listings, search, favorites)
+- [ ] Phase 6: Forum (threads, replies)
+- [ ] Phase 7: Admin panel (dashboard, moderation)
 
 ### Phase 8: Mobile App (საიტის შემდეგ)
 - [ ] React Native setup
@@ -718,7 +743,8 @@ socket.emit('chat:sendMessage', {
 | 2026-01-09 | #12 | Forum + Services modules: threads, replies, reviews, ratings |
 | 2026-01-09 | #13 | Socket.io: real-time chat, typing indicators, online status, Redis adapter |
 | 2026-01-09 | #14 | Admin module: user management, content moderation, dashboard stats |
+| 2026-01-09 | #15 | Frontend planning: FRONTEND_PLAN.md, CLAUDE.md, MVP_PLAN.md updates |
 
 ---
 
-*Last updated: 2026-01-09 - Session #14*
+*Last updated: 2026-01-09 - Session #15*
