@@ -9,3 +9,4 @@ export {
   selectTypingInConversation,
   selectIsUserOnline,
 } from './chat.store';
+export { useListingsStore } from './listings.store';
