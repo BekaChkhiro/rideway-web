@@ -44,14 +44,14 @@ git add . && git commit -m "short message" && git push
 | Component | Status | Progress |
 |-----------|--------|----------|
 | Backend (rideway-api) | ✅ ALL MODULES COMPLETE (Auth + Users + Media + Posts + Stories + Chat + Notifications + Listings + Forum + Services + Socket.io + Admin) | 100% |
-| Frontend (rideway-web) | 🔨 Chat & Real-time Complete | 75% |
+| Frontend (rideway-web) | 🔨 Marketplace Complete | 85% |
 | Mobile | ⏳ Planned | 0% |
 
 ---
 
 ## Current Task
 
-**Phase 7: Frontend Integration - CHAT & REAL-TIME COMPLETE ✅**
+**Phase 7: Frontend Integration - MARKETPLACE COMPLETE ✅**
 
 დასრულდა:
 1. [x] Frontend გეგმის შექმნა (`docs/FRONTEND_PLAN.md`) ✅
@@ -62,34 +62,31 @@ git add . && git commit -m "short message" && git push
 6. [x] **Profile & Users (Phase 2)** ✅
 7. [x] **Feed & Posts (Phase 3)** ✅
 8. [x] **Chat & Real-time (Phase 4)** ✅
-   - [x] Socket.io client setup (`lib/socket.ts`)
-   - [x] Socket provider (`providers/socket-provider.tsx`)
-   - [x] Chat store - Zustand (`stores/chat.store.ts`)
-   - [x] Chat API functions (`lib/api/chat.ts`)
-   - [x] Notifications API functions (`lib/api/notifications.ts`)
-   - [x] Chat components (`components/chat/`):
-     - [x] conversation-item.tsx
-     - [x] conversation-list.tsx
-     - [x] conversation-skeleton.tsx
-     - [x] chat-header.tsx
-     - [x] chat-window.tsx
-     - [x] message-item.tsx
-     - [x] message-list.tsx
-     - [x] message-form.tsx
-     - [x] message-button.tsx
-     - [x] typing-indicator.tsx
-   - [x] Messages page (`app/(main)/messages/page.tsx`)
-   - [x] Conversation page (`app/(main)/messages/[conversationId]/page.tsx`)
-   - [x] Message button on profile page
+9. [x] **Marketplace (Phase 5)** ✅
+   - [x] Listings API functions (`lib/api/listings.ts`)
+   - [x] Listings store - Zustand (`stores/listings.store.ts`)
+   - [x] Marketplace components (`components/marketplace/`):
+     - [x] price-tag.tsx
+     - [x] condition-badge.tsx
+     - [x] favorite-button.tsx
+     - [x] listing-card.tsx
+     - [x] listing-grid.tsx
+     - [x] listing-filters.tsx
+     - [x] listing-gallery.tsx
+     - [x] category-selector.tsx
+     - [x] listing-form.tsx
+   - [x] Marketplace page (`app/(main)/marketplace/page.tsx`)
+   - [x] Listing detail page (`app/(main)/marketplace/[id]/page.tsx`)
+   - [x] Create listing page (`app/(main)/marketplace/create/page.tsx`)
+   - [x] My listings page (`app/(main)/marketplace/my-listings/page.tsx`)
+   - [x] Favorites page (`app/(main)/marketplace/favorites/page.tsx`)
    - [x] Build: ✅ წარმატებული
 
-**შემდეგი: Marketplace (Phase 5)**
-- Listings API functions
-- Listings components (card, grid, filters)
-- Listings pages (list, detail, create)
-- Categories sidebar
-- Search functionality
-- Favorites
+**შემდეგი: Forum (Phase 6)**
+- Forum API functions
+- Forum components (thread card, reply form)
+- Forum pages (categories, threads, thread detail)
+- Services pages
 
 ---
 
@@ -368,6 +365,27 @@ git add . && git commit -m "short message" && git push
   - [x] Message button on profile page
   - [x] Build: ✅ წარმატებული
 
+### Session 21 (2026-01-09)
+- [x] **Marketplace (Phase 5) დასრულდა:**
+  - [x] Listings API functions (`lib/api/listings.ts`)
+  - [x] Listings store - Zustand (`stores/listings.store.ts`)
+  - [x] Marketplace components (`components/marketplace/`):
+    - [x] price-tag.tsx
+    - [x] condition-badge.tsx
+    - [x] favorite-button.tsx
+    - [x] listing-card.tsx (with skeleton)
+    - [x] listing-grid.tsx (with view toggle)
+    - [x] listing-filters.tsx (sort, category, price, condition, location)
+    - [x] listing-gallery.tsx (with fullscreen modal)
+    - [x] category-selector.tsx (hierarchical)
+    - [x] listing-form.tsx (create/edit with image upload)
+  - [x] Marketplace page (`app/(main)/marketplace/page.tsx`)
+  - [x] Listing detail page (`app/(main)/marketplace/[id]/page.tsx`)
+  - [x] Create listing page (`app/(main)/marketplace/create/page.tsx`)
+  - [x] My listings page (`app/(main)/marketplace/my-listings/page.tsx`)
+  - [x] Favorites page (`app/(main)/marketplace/favorites/page.tsx`)
+  - [x] Build: ✅ წარმატებული
+
 ---
 
 ## Next Tasks (Priority Order)
@@ -418,8 +436,8 @@ git add . && git commit -m "short message" && git push
 - [x] Phase 2: Profile (view, edit, follow system) ✅
 - [x] Phase 3: Feed (posts, stories, comments) ✅
 - [x] Phase 4: Chat (conversations, real-time) ✅
-- [ ] Phase 5: Marketplace (listings, search, favorites) ← **შემდეგი**
-- [ ] Phase 6: Forum (threads, replies)
+- [x] Phase 5: Marketplace (listings, search, favorites) ✅
+- [ ] Phase 6: Forum (threads, replies) ← **შემდეგი**
 - [ ] Phase 7: Admin panel (dashboard, moderation)
 
 ### Phase 8: Mobile App (საიტის შემდეგ)
@@ -869,7 +887,8 @@ socket.emit('chat:sendMessage', {
 | 2026-01-09 | #18 | Profile & Users: profile page, components, settings pages, followers/following |
 | 2026-01-09 | #19 | Feed & Posts: posts/stories API, feed page, post/comment/story components, explore, hashtag pages |
 | 2026-01-09 | #20 | Chat & Real-time: Socket.io client, chat store, chat API, conversations/messages pages, message button |
+| 2026-01-09 | #21 | Marketplace: listings API, store, components (card, grid, filters, gallery, form), pages (list, detail, create, my-listings, favorites) |
 
 ---
 
-*Last updated: 2026-01-09 - Session #20*
+*Last updated: 2026-01-09 - Session #21*
