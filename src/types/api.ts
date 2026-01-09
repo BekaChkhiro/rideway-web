@@ -84,11 +84,16 @@ export const queryKeys = {
   unreadCount: ['notifications', 'unread'] as const,
 
   // Admin
+  adminStats: ['admin', 'dashboard'] as const,
   adminUsers: (filters: Record<string, unknown>) =>
     ['admin', 'users', filters] as const,
-  adminStats: ['admin', 'dashboard'] as const,
+  adminUser: (userId: string) => ['admin', 'user', userId] as const,
   adminPosts: (filters: Record<string, unknown>) =>
     ['admin', 'posts', filters] as const,
+  adminComments: (filters: Record<string, unknown>) =>
+    ['admin', 'comments', filters] as const,
   adminListings: (filters: Record<string, unknown>) =>
     ['admin', 'listings', filters] as const,
+  adminForumThreads: (filters: Record<string, unknown>) =>
+    ['admin', 'forum', 'threads', filters] as const,
 } as const;

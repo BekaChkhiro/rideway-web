@@ -7,3 +7,4 @@ export * from './post';
 export * from './chat';
 export * from './listing';
 export * from './forum';
+export * from './admin';
