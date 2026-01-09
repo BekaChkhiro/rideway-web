@@ -43,7 +43,7 @@ git add . && git commit -m "short message" && git push
 
 | Component | Status | Progress |
 |-----------|--------|----------|
-| Backend (rideway-api) | 🔨 Auth + Users Ready | 30% |
+| Backend (rideway-api) | 🔨 Auth + Users + Media + Posts + Stories + Chat Ready | 60% |
 | Frontend (rideway-web) | ✅ Design Shell Ready | 20% |
 | Mobile | ⏳ Planned | 0% |
 
@@ -51,12 +51,12 @@ git add . && git commit -m "short message" && git push
 
 ## Current Task
 
-**Phase 1: Media Module (Next)**
+**Phase 3: Notifications Module (Next)**
 
 შემდეგი ნაბიჯი:
-1. [ ] Cloudflare R2 setup
-2. [ ] Media upload service
-3. [ ] Avatar/Cover upload endpoints
+1. [ ] Notifications service (create, get, mark as read)
+2. [ ] Notifications controller & routes
+3. [ ] Socket.io real-time notifications
 
 ---
 
@@ -117,27 +117,72 @@ git add . && git commit -m "short message" && git push
   - [x] Build: ✅ წარმატებული
   - [x] Tested endpoints: get profile ✅, update profile ✅, search ✅, follow ✅, unfollow ✅, block ✅, unblock ✅
 
+### Session 6 (2026-01-08)
+- [x] **Media Module დასრულდა:**
+  - [x] Cloudflare R2 setup (credentials in .env)
+  - [x] R2 client configuration (`src/config/r2.ts`)
+  - [x] Multer middleware for file uploads (`src/middleware/upload.ts`)
+  - [x] Media service (upload, delete files to R2) (`src/services/media.service.ts`)
+  - [x] Media controller (`src/controllers/media.controller.ts`)
+  - [x] Media routes (`/api/v1/media/*`)
+  - [x] Build: ✅ წარმატებული
+  - [x] Tested endpoints: upload avatar ✅, upload cover ✅, delete avatar ✅, delete cover ✅
+
+### Session 7 (2026-01-09)
+- [x] **Posts Module დასრულდა:**
+  - [x] Posts validators (Zod schemas: create, update, pagination)
+  - [x] Posts service (CRUD, feed, trending, hashtag search, like toggle)
+  - [x] Posts controller
+  - [x] Posts routes (`/api/v1/posts/*`)
+  - [x] Hashtag extraction and management
+  - [x] Build: ✅ წარმატებული
+  - [x] Tested: create post ✅, get feed ✅, get trending ✅, get by hashtag ✅, toggle like ✅
+- [x] **Comments Module დასრულდა:**
+  - [x] Comments service (CRUD, replies, like toggle)
+  - [x] Comments controller
+  - [x] Comments routes (nested under posts)
+  - [x] Build: ✅ წარმატებული
+  - [x] Tested: add comment ✅, get comments ✅, toggle comment like ✅
+
+### Session 8 (2026-01-09)
+- [x] **Stories Module დასრულდა:**
+  - [x] Stories validators (Zod schemas: create, storyId, userId params)
+  - [x] Stories service (create, get feed, get by user, view, delete, cleanup)
+  - [x] Stories controller
+  - [x] Stories routes (`/api/v1/stories/*`)
+  - [x] Story media upload (images + videos, 50MB limit)
+  - [x] 24-hour expiry logic
+  - [x] Feed stories grouped by user (unviewed first)
+  - [x] Build: ✅ წარმატებული
+  - [x] Tested: create story ✅, get feed ✅, get my stories ✅, view story ✅, get viewers ✅, delete ✅
+
+### Session 9 (2026-01-09)
+- [x] **Chat Module დასრულდა:**
+  - [x] Chat validators (Zod schemas: createConversation, sendMessage, conversationId params)
+  - [x] Chat service (getConversations, getOrCreateConversation, getMessages, sendMessage, markAsRead, getUnreadCount)
+  - [x] Chat controller
+  - [x] Chat routes (`/api/v1/chat/*`)
+  - [x] Block checking in chat (can't message blocked users)
+  - [x] Build: ✅ წარმატებული
+  - [x] Tested: create conversation ✅, send message ✅, get conversations ✅, get messages ✅, mark as read ✅, unread count ✅
+
 ---
 
 ## Next Tasks (Priority Order)
 
 ### Immediate (მიმდინარე)
-- [ ] **Media Module** (Phase 1 გაგრძელება)
-  - [ ] Cloudflare R2 setup
-  - [ ] Media upload service
-  - [ ] Avatar/Cover upload endpoints
+- [ ] **Notifications Module** (Phase 3)
+  - [ ] Notifications CRUD
+  - [ ] Mark as read
+  - [ ] Socket.io real-time
 
-### Phase 1: Foundation (გაგრძელება)
-- [ ] Media module (R2 upload) - ზემოთ
-
-### Phase 2: Social
-- [ ] Posts module (CRUD, likes, comments)
-- [ ] Stories module
-- [ ] Feed
-- [ ] Hashtags
+### Phase 2: Social ✅
+- [x] Posts module (CRUD, likes, comments) ✅
+- [x] Stories module ✅
+- [x] Hashtags ✅
 
 ### Phase 3: Communication
-- [ ] Chat module
+- [x] Chat module ✅
 - [ ] Notifications module
 - [ ] Socket.io setup
 
@@ -179,25 +224,44 @@ rideway-api/
 ├── src/
 │   ├── config/
 │   │   ├── index.ts        # Environment config
-│   │   └── database.ts     # Prisma client
+│   │   ├── database.ts     # Prisma client
+│   │   └── r2.ts           # Cloudflare R2 client ✅
 │   ├── middleware/
 │   │   ├── index.ts        # Exports
 │   │   ├── error-handler.ts # AppError class + handler
 │   │   ├── async-handler.ts
 │   │   ├── validate.ts     # Zod validation (body/params/query)
-│   │   └── auth.ts         # JWT verification ✅
+│   │   ├── auth.ts         # JWT verification ✅
+│   │   └── upload.ts       # Multer file upload ✅
 │   ├── routes/
 │   │   ├── auth.routes.ts  # Auth routes ✅
-│   │   └── users.routes.ts # Users routes ✅
+│   │   ├── users.routes.ts # Users routes ✅
+│   │   ├── media.routes.ts # Media routes ✅
+│   │   ├── posts.routes.ts # Posts + Comments routes ✅
+│   │   ├── stories.routes.ts # Stories routes ✅
+│   │   └── chat.routes.ts  # Chat routes ✅
 │   ├── controllers/
 │   │   ├── auth.controller.ts ✅
-│   │   └── users.controller.ts ✅
+│   │   ├── users.controller.ts ✅
+│   │   ├── media.controller.ts ✅
+│   │   ├── posts.controller.ts ✅
+│   │   ├── comments.controller.ts ✅
+│   │   ├── stories.controller.ts ✅
+│   │   └── chat.controller.ts ✅
 │   ├── services/
 │   │   ├── auth.service.ts ✅
-│   │   └── users.service.ts ✅
+│   │   ├── users.service.ts ✅
+│   │   ├── media.service.ts ✅
+│   │   ├── posts.service.ts ✅
+│   │   ├── comments.service.ts ✅
+│   │   ├── stories.service.ts ✅
+│   │   └── chat.service.ts ✅
 │   ├── validators/
 │   │   ├── auth.ts         # Auth Zod schemas ✅
-│   │   └── users.ts        # Users Zod schemas ✅
+│   │   ├── users.ts        # Users Zod schemas ✅
+│   │   ├── posts.ts        # Posts + Comments Zod schemas ✅
+│   │   ├── stories.ts      # Stories Zod schemas ✅
+│   │   └── chat.ts         # Chat Zod schemas ✅
 │   ├── types/
 │   │   ├── api.ts          # API response types
 │   │   └── express.d.ts    # Express extensions
@@ -246,6 +310,85 @@ rideway-api/
 
 ---
 
+## Media Module API
+
+| Endpoint | Method | Auth | Description |
+|----------|--------|------|-------------|
+| `/api/v1/media/avatar` | PATCH | ✅ | Avatar-ის ატვირთვა |
+| `/api/v1/media/avatar` | DELETE | ✅ | Avatar-ის წაშლა |
+| `/api/v1/media/cover` | PATCH | ✅ | Cover-ის ატვირთვა |
+| `/api/v1/media/cover` | DELETE | ✅ | Cover-ის წაშლა |
+
+**File Limits:**
+- Avatar: 5MB (jpeg, png, webp)
+- Cover: 10MB (jpeg, png, webp)
+- Post images: 10MB each, max 10 images
+- Listing images: 10MB each, max 20 images
+
+---
+
+## Posts Module API
+
+| Endpoint | Method | Auth | Description |
+|----------|--------|------|-------------|
+| `/api/v1/posts` | POST | ✅ | პოსტის შექმნა (+ images) |
+| `/api/v1/posts/feed` | GET | ✅ | Feed (following + own) |
+| `/api/v1/posts/trending` | GET | opt | Trending პოსტები |
+| `/api/v1/posts/user/:userId` | GET | opt | მომხმარებლის პოსტები |
+| `/api/v1/posts/hashtag/:tag` | GET | opt | პოსტები hashtag-ით |
+| `/api/v1/posts/:id` | GET | opt | პოსტის ნახვა |
+| `/api/v1/posts/:id` | PATCH | ✅ | პოსტის რედაქტირება |
+| `/api/v1/posts/:id` | DELETE | ✅ | პოსტის წაშლა |
+| `/api/v1/posts/:id/like` | POST | ✅ | ლაიქის toggle |
+| `/api/v1/posts/:id/comments` | GET | opt | კომენტარები |
+| `/api/v1/posts/:id/comments` | POST | ✅ | კომენტარის დამატება |
+| `/api/v1/posts/comments/:commentId` | PATCH | ✅ | კომენტარის რედაქტირება |
+| `/api/v1/posts/comments/:commentId` | DELETE | ✅ | კომენტარის წაშლა |
+| `/api/v1/posts/comments/:commentId/like` | POST | ✅ | კომენტარის ლაიქი |
+| `/api/v1/posts/comments/:commentId/replies` | GET | opt | პასუხები |
+
+---
+
+## Stories Module API
+
+| Endpoint | Method | Auth | Description |
+|----------|--------|------|-------------|
+| `/api/v1/stories` | POST | ✅ | Story-ის შექმნა (+ media) |
+| `/api/v1/stories` | GET | ✅ | Feed stories (grouped by user) |
+| `/api/v1/stories/me` | GET | ✅ | ჩემი აქტიური stories |
+| `/api/v1/stories/user/:userId` | GET | opt | მომხმარებლის stories |
+| `/api/v1/stories/:id` | GET | opt | ერთი story |
+| `/api/v1/stories/:id/view` | POST | ✅ | Story-ის ნახვა (mark as viewed) |
+| `/api/v1/stories/:id/viewers` | GET | ✅ | ვინ ნახა (owner only) |
+| `/api/v1/stories/:id` | DELETE | ✅ | Story-ის წაშლა |
+
+**Story Features:**
+- 24-საათიანი ვადა (expiresAt)
+- Image + Video support (50MB limit)
+- Feed grouped by user, unviewed first
+- Own stories first in feed
+
+---
+
+## Chat Module API
+
+| Endpoint | Method | Auth | Description |
+|----------|--------|------|-------------|
+| `/api/v1/chat/unread` | GET | ✅ | წაუკითხავი შეტყობინებების რაოდენობა |
+| `/api/v1/chat/conversations` | GET | ✅ | საუბრების სია |
+| `/api/v1/chat/conversations` | POST | ✅ | საუბრის შექმნა/მიღება |
+| `/api/v1/chat/conversations/:id/messages` | GET | ✅ | შეტყობინებები |
+| `/api/v1/chat/conversations/:id/messages` | POST | ✅ | შეტყობინების გაგზავნა |
+| `/api/v1/chat/conversations/:id/read` | POST | ✅ | წაკითხულად მონიშვნა |
+
+**Chat Features:**
+- 1-to-1 messaging
+- Unread count tracking
+- Block checking (can't message blocked users)
+- Last message preview in conversations list
+
+---
+
 ## Notes
 
 ### Session 1 Notes:
@@ -283,7 +426,11 @@ rideway-api/
 | 2026-01-08 | #3 | Backend setup: Express.js, TypeScript, Prisma 7, DB schema |
 | 2026-01-08 | #4 | Auth module: validators, service, controller, routes, middleware |
 | 2026-01-08 | #5 | Users module: profile CRUD, follow/unfollow, block/unblock |
+| 2026-01-08 | #6 | Media module: Cloudflare R2, avatar/cover upload/delete |
+| 2026-01-09 | #7 | Posts + Comments module: CRUD, likes, hashtags, feed, trending |
+| 2026-01-09 | #8 | Stories module: CRUD, 24h expiry, feed grouped by user, view tracking |
+| 2026-01-09 | #9 | Chat module: conversations, messages, unread count, mark as read |
 
 ---
 
-*Last updated: 2026-01-08 - Session #5*
+*Last updated: 2026-01-09 - Session #9*
