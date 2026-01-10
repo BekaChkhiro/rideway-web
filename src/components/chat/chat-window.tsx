@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { ChatHeader } from './chat-header';
 import { MessageList } from './message-list';
 import { MessageForm } from './message-form';
+import { ConversationMediaView } from './conversation-media-view';
 import { joinConversation, leaveConversation, markMessagesRead } from '@/lib/socket';
 import { markAsRead } from '@/lib/api';
 import { useChatStore, useNotificationsStore } from '@/stores';
@@ -16,6 +17,7 @@ interface ChatWindowProps {
 }
 
 export function ChatWindow({ conversation }: ChatWindowProps) {
+  const [showMedia, setShowMedia] = useState(false);
   const { isConnected } = useSocket();
   const setActiveConversation = useChatStore((state) => state.setActiveConversation);
   const markConversationAsRead = useChatStore((state) => state.markConversationAsRead);
@@ -72,9 +74,22 @@ export function ChatWindow({ conversation }: ChatWindowProps) {
     });
   }, [conversation.id, notifications, markNotificationAsReadInStore]);
 
+  // Show media view
+  if (showMedia) {
+    return (
+      <ConversationMediaView
+        conversationId={conversation.id}
+        onBack={() => setShowMedia(false)}
+      />
+    );
+  }
+
   return (
     <div className="flex flex-col h-full">
-      <ChatHeader participant={conversation.participant} conversationId={conversation.id} />
+      <ChatHeader
+        participant={conversation.participant}
+        onMediaClick={() => setShowMedia(true)}
+      />
       <MessageList conversationId={conversation.id} />
       <MessageForm conversationId={conversation.id} />
     </div>
