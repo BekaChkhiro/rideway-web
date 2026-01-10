@@ -12,3 +12,4 @@ export { MessageList } from './message-list';
 export { MessageForm } from './message-form';
 export { MessageButton } from './message-button';
 export { TypingIndicator } from './typing-indicator';
+export { ConversationMedia } from './conversation-media';

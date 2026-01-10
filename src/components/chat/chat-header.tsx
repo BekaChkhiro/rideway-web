@@ -1,7 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, MoreVertical } from 'lucide-react';
+import { ArrowLeft, MoreVertical, Images } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,13 +12,16 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useChatStore, selectIsUserOnline } from '@/stores';
+import { ConversationMedia } from './conversation-media';
 import type { UserCard } from '@/types';
 
 interface ChatHeaderProps {
   participant: UserCard;
+  conversationId: string;
 }
 
-export function ChatHeader({ participant }: ChatHeaderProps) {
+export function ChatHeader({ participant, conversationId }: ChatHeaderProps) {
+  const [mediaOpen, setMediaOpen] = useState(false);
   const isOnline = useChatStore((state) =>
     selectIsUserOnline(state, participant.id)
   );
@@ -72,8 +76,19 @@ export function ChatHeader({ participant }: ChatHeaderProps) {
           <DropdownMenuItem asChild>
             <Link href={`/${participant.username}`}>პროფილის ნახვა</Link>
           </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setMediaOpen(true)}>
+            <Images className="h-4 w-4 mr-2" />
+            მედია
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {/* Media dialog */}
+      <ConversationMedia
+        conversationId={conversationId}
+        open={mediaOpen}
+        onOpenChange={setMediaOpen}
+      />
     </div>
   );
 }

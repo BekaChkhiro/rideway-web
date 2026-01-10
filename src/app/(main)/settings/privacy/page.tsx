@@ -33,7 +33,7 @@ export default function PrivacySettingsPage() {
 
   const handleSave = () => {
     // TODO: Implement save privacy settings
-    toast.info('Privacy settings functionality coming soon');
+    toast.info('კონფიდენციალურობის პარამეტრები მალე დაემატება');
     console.log('Privacy settings:', settings);
   };
 
@@ -52,17 +52,17 @@ export default function PrivacySettingsPage() {
       {/* Profile Privacy */}
       <Card>
         <CardHeader>
-          <CardTitle>Profile Privacy</CardTitle>
+          <CardTitle>პროფილის კონფიდენციალურობა</CardTitle>
           <CardDescription>
-            Control who can see your profile and content.
+            აკონტროლე ვინ ხედავს შენს პროფილს და კონტენტს.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="private-profile">Private Profile</Label>
+              <Label htmlFor="private-profile">პირადი პროფილი</Label>
               <p className="text-sm text-muted-foreground">
-                Only approved followers can see your posts and stories.
+                მხოლოდ დამტკიცებული მიმდევრები ხედავენ პოსტებს და სთორებს.
               </p>
             </div>
             <Switch
@@ -76,9 +76,9 @@ export default function PrivacySettingsPage() {
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="show-activity">Activity Status</Label>
+              <Label htmlFor="show-activity">აქტივობის სტატუსი</Label>
               <p className="text-sm text-muted-foreground">
-                Show your recent activity to other users.
+                აჩვენე ბოლო აქტივობა სხვა მომხმარებლებს.
               </p>
             </div>
             <Switch
@@ -93,17 +93,17 @@ export default function PrivacySettingsPage() {
       {/* Online Status */}
       <Card>
         <CardHeader>
-          <CardTitle>Online Status</CardTitle>
+          <CardTitle>ონლაინ სტატუსი</CardTitle>
           <CardDescription>
-            Manage your online presence visibility.
+            მართე ონლაინ სტატუსის ხილვადობა.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="online-status">Show Online Status</Label>
+              <Label htmlFor="online-status">ონლაინ სტატუსის ჩვენება</Label>
               <p className="text-sm text-muted-foreground">
-                Let others see when you&apos;re online.
+                სხვებმა ხედონ როცა ონლაინ ხარ.
               </p>
             </div>
             <Switch
@@ -117,9 +117,9 @@ export default function PrivacySettingsPage() {
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="last-seen">Show Last Seen</Label>
+              <Label htmlFor="last-seen">ბოლოს ნანახის ჩვენება</Label>
               <p className="text-sm text-muted-foreground">
-                Let others see when you were last active.
+                სხვებმა ხედონ როდის იყავი ბოლოს აქტიური.
               </p>
             </div>
             <Switch
@@ -134,17 +134,17 @@ export default function PrivacySettingsPage() {
       {/* Interactions */}
       <Card>
         <CardHeader>
-          <CardTitle>Interactions</CardTitle>
+          <CardTitle>ინტერაქციები</CardTitle>
           <CardDescription>
-            Control how others can interact with you.
+            აკონტროლე როგორ ურთიერთობენ შენთან სხვები.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="allow-messages">Allow Messages</Label>
+              <Label htmlFor="allow-messages">შეტყობინებების დაშვება</Label>
               <p className="text-sm text-muted-foreground">
-                Allow users to send you direct messages.
+                დაუშვი მომხმარებლებს პირადი შეტყობინებების გამოგზავნა.
               </p>
             </div>
             <Switch
@@ -158,9 +158,9 @@ export default function PrivacySettingsPage() {
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="allow-tagging">Allow Tagging</Label>
+              <Label htmlFor="allow-tagging">მონიშვნის დაშვება</Label>
               <p className="text-sm text-muted-foreground">
-                Allow others to tag you in posts and comments.
+                დაუშვი სხვებს შენი მონიშვნა პოსტებსა და კომენტარებში.
               </p>
             </div>
             <Switch
@@ -173,7 +173,7 @@ export default function PrivacySettingsPage() {
       </Card>
 
       <div className="flex justify-end">
-        <Button onClick={handleSave}>Save Changes</Button>
+        <Button onClick={handleSave}>შენახვა</Button>
       </div>
     </div>
   );

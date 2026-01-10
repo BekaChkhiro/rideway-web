@@ -35,10 +35,10 @@ export async function getOrCreateConversation(
 
 // Get unread messages count
 export async function getUnreadCount(): Promise<number> {
-  const response = await apiClient.get<ApiResponse<{ count: number }>>(
+  const response = await apiClient.get<ApiResponse<{ unreadCount: number }>>(
     '/chat/unread'
   );
-  return response.data.data.count;
+  return response.data.data.unreadCount;
 }
 
 // ==================== Messages ====================
@@ -72,4 +72,44 @@ export async function sendMessage(
 // Mark conversation as read
 export async function markAsRead(conversationId: string): Promise<void> {
   await apiClient.post(`/chat/conversations/${conversationId}/read`);
+}
+
+// Get media (images) from conversation
+export interface MediaItem {
+  id: string;
+  url: string;
+  messageId: string;
+  senderId: string;
+  createdAt: string;
+}
+
+export async function getConversationMedia(
+  conversationId: string,
+  page = 1,
+  limit = 50
+): Promise<{ media: MediaItem[]; meta: PaginationMeta }> {
+  const response = await apiClient.get<
+    ApiResponse<MediaItem[]> & { meta: PaginationMeta }
+  >(`/chat/conversations/${conversationId}/media`, {
+    params: { page, limit },
+  });
+  return { media: response.data.data, meta: response.data.meta! };
+}
+
+// Upload images for chat
+export async function uploadChatImages(
+  conversationId: string,
+  files: File[]
+): Promise<{ urls: string[] }> {
+  const formData = new FormData();
+  files.forEach((file) => formData.append('images', file));
+
+  const response = await apiClient.post<
+    ApiResponse<{ urls: string[]; conversationId: string }>
+  >(`/chat/conversations/${conversationId}/upload`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return { urls: response.data.data.urls };
 }

@@ -7,8 +7,8 @@ export interface Post {
   content: string;
   images: PostImage[];
   author: UserCard;
-  likesCount: number;
-  commentsCount: number;
+  likeCount: number;
+  commentCount: number;
   isLiked?: boolean;
   hashtags: string[];
   createdAt: string;
@@ -36,7 +36,7 @@ export interface Comment {
   author: UserCard;
   postId: string;
   parentId: string | null;
-  likesCount: number;
+  likeCount: number;
   repliesCount: number;
   isLiked?: boolean;
   createdAt: string;

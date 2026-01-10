@@ -10,40 +10,40 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 
 const settingsNav = [
   {
-    title: 'Profile',
+    title: 'პროფილი',
     href: '/settings/profile',
     icon: User,
-    description: 'Update your profile information',
+    description: 'პროფილის ინფორმაციის რედაქტირება',
   },
   {
-    title: 'Account',
+    title: 'ანგარიში',
     href: '/settings/account',
     icon: Settings,
-    description: 'Manage your account settings',
+    description: 'ანგარიშის პარამეტრები',
   },
   {
-    title: 'Privacy',
+    title: 'კონფიდენციალურობა',
     href: '/settings/privacy',
     icon: Shield,
-    description: 'Control your privacy settings',
+    description: 'კონფიდენციალურობის პარამეტრები',
   },
   {
-    title: 'Security',
+    title: 'უსაფრთხოება',
     href: '/settings/security',
     icon: Lock,
-    description: 'Secure your account',
+    description: 'ანგარიშის დაცვა',
   },
   {
-    title: 'Notifications',
+    title: 'შეტყობინებები',
     href: '/settings/notifications',
     icon: Bell,
-    description: 'Manage notification preferences',
+    description: 'შეტყობინებების პარამეტრები',
   },
   {
-    title: 'Blocked Users',
+    title: 'დაბლოკილი მომხმარებლები',
     href: '/settings/blocked',
     icon: Ban,
-    description: 'Manage blocked accounts',
+    description: 'დაბლოკილი ანგარიშები',
   },
 ];
 
@@ -57,9 +57,9 @@ export default function SettingsLayout({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Settings</h1>
+        <h1 className="text-2xl font-bold">პარამეტრები</h1>
         <p className="text-muted-foreground">
-          Manage your account settings and preferences.
+          მართე შენი ანგარიშის პარამეტრები და პრეფერენციები.
         </p>
       </div>
 

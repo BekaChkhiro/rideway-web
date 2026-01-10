@@ -10,3 +10,4 @@ export {
   selectIsUserOnline,
 } from './chat.store';
 export { useListingsStore } from './listings.store';
+export { useNotificationsStore } from './notifications.store';

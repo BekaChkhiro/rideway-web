@@ -55,7 +55,7 @@ export function CommentItem({
 }: CommentItemProps) {
   const { data: session } = useSession();
   const [isLiked, setIsLiked] = useState(comment.isLiked ?? false);
-  const [likesCount, setLikesCount] = useState(comment.likesCount);
+  const [likesCount, setLikesCount] = useState(comment.likeCount ?? 0);
   const [isLiking, setIsLiking] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);

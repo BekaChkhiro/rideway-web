@@ -21,23 +21,29 @@ export async function register(data: RegisterData): Promise<RegisterResponse> {
 
 // Verify OTP code
 export async function verifyOtp(data: VerifyOtpData): Promise<AuthResponse> {
-  const response = await apiClient.post<ApiResponse<AuthResponse>>(
+  const response = await apiClient.post<ApiResponse<{ user: AuthResponse['user']; tokens: { accessToken: string; refreshToken: string } }>>(
     '/auth/verify-otp',
     data
   );
 
-  // Store tokens
-  const { accessToken, refreshToken } = response.data.data;
+  // Store tokens - backend returns { user, tokens: { accessToken, refreshToken } }
+  const { user, tokens } = response.data.data;
+  const { accessToken, refreshToken } = tokens;
   setTokens(accessToken, refreshToken);
 
-  return response.data.data;
+  // Return in AuthResponse format
+  return {
+    user,
+    accessToken,
+    refreshToken,
+  };
 }
 
 // Resend OTP
-export async function resendOtp(userId: string): Promise<{ message: string }> {
+export async function resendOtp(userId: string, type: 'EMAIL' | 'PHONE' = 'EMAIL'): Promise<{ message: string }> {
   const response = await apiClient.post<ApiResponse<{ message: string }>>(
     '/auth/resend-otp',
-    { userId }
+    { userId, type }
   );
   return response.data.data;
 }
@@ -83,14 +89,19 @@ export async function loginDirect(
   email: string,
   password: string
 ): Promise<AuthResponse> {
-  const response = await apiClient.post<ApiResponse<AuthResponse>>(
+  const response = await apiClient.post<ApiResponse<{ user: AuthResponse['user']; tokens: { accessToken: string; refreshToken: string } }>>(
     '/auth/login',
     { email, password }
   );
 
-  // Store tokens
-  const { accessToken, refreshToken } = response.data.data;
+  // Store tokens - backend returns { user, tokens: { accessToken, refreshToken } }
+  const { user, tokens } = response.data.data;
+  const { accessToken, refreshToken } = tokens;
   setTokens(accessToken, refreshToken);
 
-  return response.data.data;
+  return {
+    user,
+    accessToken,
+    refreshToken,
+  };
 }

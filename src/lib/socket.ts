@@ -1,6 +1,6 @@
 import { io, Socket } from 'socket.io-client';
 import { getAccessToken } from './api/client';
-import type { Message } from '@/types';
+import type { Message, Notification } from '@/types';
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:8000';
 
@@ -14,8 +14,13 @@ export interface SocketEvents {
   'chat:typingStart': (data: { conversationId: string; userId: string }) => void;
   'chat:typingStop': (data: { conversationId: string; userId: string }) => void;
   'chat:messagesRead': (data: { conversationId: string; readBy: string }) => void;
+  'chat:reactionAdded': (data: { conversationId: string; messageId: string; emoji: string; userId: string }) => void;
+  'chat:reactionRemoved': (data: { conversationId: string; messageId: string; emoji: string; userId: string }) => void;
+  'chat:messageEdited': (data: { conversationId: string; message: Message }) => void;
+  'chat:messageDeleted': (data: { conversationId: string; messageId: string }) => void;
   'user:online': (data: { userId: string }) => void;
   'user:offline': (data: { userId: string }) => void;
+  'new_notification': (data: { notification: Notification }) => void;
 }
 
 export interface SocketEmitEvents {
@@ -23,12 +28,28 @@ export interface SocketEmitEvents {
   'chat:join': (conversationId: string, callback?: (response: { success: boolean }) => void) => void;
   'chat:leave': (conversationId: string, callback?: (response: { success: boolean }) => void) => void;
   'chat:sendMessage': (
-    data: { conversationId: string; content: string },
+    data: { conversationId: string; content: string; replyToId?: string; imageUrls?: string[] },
     callback?: (response: { success: boolean; message?: Message }) => void
   ) => void;
   'chat:typing': (conversationId: string) => void;
   'chat:stopTyping': (conversationId: string) => void;
   'chat:markRead': (conversationId: string, callback?: (response: { success: boolean }) => void) => void;
+  'chat:addReaction': (
+    data: { conversationId: string; messageId: string; emoji: string },
+    callback?: (response: { success: boolean }) => void
+  ) => void;
+  'chat:removeReaction': (
+    data: { conversationId: string; messageId: string; emoji: string },
+    callback?: (response: { success: boolean }) => void
+  ) => void;
+  'chat:editMessage': (
+    data: { conversationId: string; messageId: string; content: string; removedImageIds?: string[]; newImageUrls?: string[] },
+    callback?: (response: { success: boolean; message?: Message }) => void
+  ) => void;
+  'chat:deleteMessage': (
+    data: { conversationId: string; messageId: string },
+    callback?: (response: { success: boolean }) => void
+  ) => void;
   'users:getOnline': (
     userIds: string[],
     callback: (response: { success: boolean; onlineUsers?: string[] }) => void
@@ -120,7 +141,9 @@ export function leaveConversation(conversationId: string): Promise<boolean> {
 // Send message via socket
 export function sendSocketMessage(
   conversationId: string,
-  content: string
+  content: string,
+  replyToId?: string,
+  imageUrls?: string[]
 ): Promise<{ success: boolean; message?: Message }> {
   return new Promise((resolve) => {
     if (!socket?.connected) {
@@ -129,7 +152,7 @@ export function sendSocketMessage(
     }
     socket.emit(
       'chat:sendMessage',
-      { conversationId, content },
+      { conversationId, content, replyToId, imageUrls },
       (response: { success: boolean; message?: Message }) => {
         resolve(response);
       }
@@ -176,6 +199,91 @@ export function getOnlineUsers(userIds: string[]): Promise<string[]> {
       userIds,
       (response: { success: boolean; onlineUsers?: string[] }) => {
         resolve(response.onlineUsers || []);
+      }
+    );
+  });
+}
+
+// Add reaction to message
+export function addReaction(
+  conversationId: string,
+  messageId: string,
+  emoji: string
+): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (!socket?.connected) {
+      resolve(false);
+      return;
+    }
+    socket.emit(
+      'chat:addReaction',
+      { conversationId, messageId, emoji },
+      (response: { success: boolean }) => {
+        resolve(response.success);
+      }
+    );
+  });
+}
+
+// Remove reaction from message
+export function removeReaction(
+  conversationId: string,
+  messageId: string,
+  emoji: string
+): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (!socket?.connected) {
+      resolve(false);
+      return;
+    }
+    socket.emit(
+      'chat:removeReaction',
+      { conversationId, messageId, emoji },
+      (response: { success: boolean }) => {
+        resolve(response.success);
+      }
+    );
+  });
+}
+
+// Edit message
+export function editMessage(
+  conversationId: string,
+  messageId: string,
+  content: string,
+  removedImageIds?: string[],
+  newImageUrls?: string[]
+): Promise<{ success: boolean; message?: Message }> {
+  return new Promise((resolve) => {
+    if (!socket?.connected) {
+      resolve({ success: false });
+      return;
+    }
+    socket.emit(
+      'chat:editMessage',
+      { conversationId, messageId, content, removedImageIds, newImageUrls },
+      (response: { success: boolean; message?: Message }) => {
+        resolve(response);
+      }
+    );
+  });
+}
+
+// Delete message
+export function deleteMessage(
+  conversationId: string,
+  messageId: string
+): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (!socket?.connected) {
+      resolve(false);
+      return;
+    }
+    socket.emit(
+      'chat:deleteMessage',
+      { conversationId, messageId },
+      (response: { success: boolean }) => {
+        resolve(response.success);
       }
     );
   });

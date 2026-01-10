@@ -66,6 +66,43 @@ export async function getPostsByUser(
   return { posts: response.data.data, meta: response.data.meta! };
 }
 
+// Get posts liked by user
+export async function getLikedPosts(
+  userId: string,
+  page = 1,
+  limit = 10
+): Promise<{ posts: Post[]; meta: PaginationMeta }> {
+  const response = await apiClient.get<
+    ApiResponse<Post[]> & { meta: PaginationMeta }
+  >(`/posts/liked/${userId}`, {
+    params: { page, limit },
+  });
+  return { posts: response.data.data, meta: response.data.meta! };
+}
+
+// Get saved posts (own only)
+export async function getSavedPosts(
+  page = 1,
+  limit = 10
+): Promise<{ posts: Post[]; meta: PaginationMeta }> {
+  const response = await apiClient.get<
+    ApiResponse<Post[]> & { meta: PaginationMeta }
+  >('/posts/saved', {
+    params: { page, limit },
+  });
+  return { posts: response.data.data, meta: response.data.meta! };
+}
+
+// Toggle save/bookmark on post
+export async function togglePostSave(
+  postId: string
+): Promise<{ saved: boolean }> {
+  const response = await apiClient.post<ApiResponse<{ saved: boolean }>>(
+    `/posts/${postId}/save`
+  );
+  return response.data.data;
+}
+
 // ==================== Post CRUD ====================
 
 // Get single post
@@ -96,11 +133,34 @@ export async function createPost(data: CreatePostData): Promise<Post> {
 // Update post
 export async function updatePost(
   postId: string,
-  data: UpdatePostData
+  data: UpdatePostData & {
+    deleteImageIds?: string[];
+    newImages?: File[];
+  }
 ): Promise<Post> {
+  const formData = new FormData();
+  if (data.content !== undefined) {
+    formData.append('content', data.content);
+  }
+
+  if (data.deleteImageIds && data.deleteImageIds.length > 0) {
+    formData.append('deleteImageIds', JSON.stringify(data.deleteImageIds));
+  }
+
+  if (data.newImages && data.newImages.length > 0) {
+    data.newImages.forEach((image) => {
+      formData.append('images', image);
+    });
+  }
+
   const response = await apiClient.patch<ApiResponse<Post>>(
     `/posts/${postId}`,
-    data
+    formData,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }
   );
   return response.data.data;
 }

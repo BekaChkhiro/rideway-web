@@ -5,9 +5,28 @@ import type { UserCard } from './user';
 export interface Conversation {
   id: string;
   participant: UserCard;
-  lastMessage: Message | null;
+  lastMessage: string | null;
+  lastMessageSenderId: string | null;
   unreadCount: number;
   updatedAt: string;
+}
+
+export interface ReplyInfo {
+  id: string;
+  content: string;
+  senderId: string;
+}
+
+export interface MessageReaction {
+  emoji: string;
+  count: number;
+  hasReacted: boolean;
+}
+
+export interface MessageImage {
+  id: string;
+  url: string;
+  order: number;
 }
 
 export interface Message {
@@ -16,12 +35,18 @@ export interface Message {
   senderId: string;
   content: string;
   isRead: boolean;
+  isDeleted: boolean;
+  editedAt: string | null;
+  replyTo: ReplyInfo | null;
+  reactions: MessageReaction[];
+  images: MessageImage[];
   createdAt: string;
 }
 
 export interface SendMessageData {
   conversationId: string;
   content: string;
+  replyToId?: string;
 }
 
 export interface CreateConversationData {
@@ -44,9 +69,10 @@ export type NotificationType =
 export interface Notification {
   id: string;
   type: NotificationType;
-  message: string;
+  title: string;
+  body: string;
   isRead: boolean;
   data: Record<string, string> | null;
-  actor: UserCard | null;
+  actor?: UserCard | null;
   createdAt: string;
 }

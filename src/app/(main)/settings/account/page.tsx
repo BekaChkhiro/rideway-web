@@ -68,19 +68,19 @@ export default function AccountSettingsPage() {
 
   const handleEmailSubmit = (data: EmailFormData) => {
     // TODO: Implement email change
-    toast.info('Email change functionality coming soon');
+    toast.info('ელ-ფოსტის შეცვლა მალე დაემატება');
     console.log('Email change:', data);
   };
 
   const handlePhoneSubmit = (data: PhoneFormData) => {
     // TODO: Implement phone change
-    toast.info('Phone change functionality coming soon');
+    toast.info('ტელეფონის შეცვლა მალე დაემატება');
     console.log('Phone change:', data);
   };
 
   const handleDeleteAccount = () => {
     // TODO: Implement account deletion
-    toast.info('Account deletion functionality coming soon');
+    toast.info('ანგარიშის წაშლა მალე დაემატება');
   };
 
   if (authLoading || !user) {
@@ -98,9 +98,9 @@ export default function AccountSettingsPage() {
       {/* Email */}
       <Card>
         <CardHeader>
-          <CardTitle>Email Address</CardTitle>
+          <CardTitle>ელ-ფოსტა</CardTitle>
           <CardDescription>
-            Your email is used for login and notifications.
+            ელ-ფოსტა გამოიყენება ავტორიზაციისა და შეტყობინებებისთვის.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -114,7 +114,7 @@ export default function AccountSettingsPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>ელ-ფოსტა</FormLabel>
                     <FormControl>
                       <Input
                         type="email"
@@ -132,16 +132,16 @@ export default function AccountSettingsPage() {
                 name="currentPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Current Password</FormLabel>
+                    <FormLabel>მიმდინარე პაროლი</FormLabel>
                     <FormControl>
                       <Input
                         type="password"
-                        placeholder="Enter your password to confirm"
+                        placeholder="შეიყვანე პაროლი დასადასტურებლად"
                         {...field}
                       />
                     </FormControl>
                     <FormDescription>
-                      Required to change your email address.
+                      საჭიროა ელ-ფოსტის შესაცვლელად.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -149,7 +149,7 @@ export default function AccountSettingsPage() {
               />
 
               <div className="flex justify-end">
-                <Button type="submit">Update Email</Button>
+                <Button type="submit">განახლება</Button>
               </div>
             </form>
           </Form>
@@ -159,9 +159,9 @@ export default function AccountSettingsPage() {
       {/* Phone */}
       <Card>
         <CardHeader>
-          <CardTitle>Phone Number</CardTitle>
+          <CardTitle>ტელეფონის ნომერი</CardTitle>
           <CardDescription>
-            Your phone number for account recovery and optional notifications.
+            ტელეფონის ნომერი ანგარიშის აღდგენისა და შეტყობინებებისთვის.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -175,7 +175,7 @@ export default function AccountSettingsPage() {
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Phone Number</FormLabel>
+                    <FormLabel>ტელეფონის ნომერი</FormLabel>
                     <FormControl>
                       <Input
                         type="tel"
@@ -189,7 +189,7 @@ export default function AccountSettingsPage() {
               />
 
               <div className="flex justify-end">
-                <Button type="submit">Update Phone</Button>
+                <Button type="submit">განახლება</Button>
               </div>
             </form>
           </Form>
@@ -199,38 +199,38 @@ export default function AccountSettingsPage() {
       {/* Account Information */}
       <Card>
         <CardHeader>
-          <CardTitle>Account Information</CardTitle>
+          <CardTitle>ანგარიშის ინფორმაცია</CardTitle>
           <CardDescription>
-            Information about your account status.
+            ინფორმაცია ანგარიშის სტატუსის შესახებ.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex justify-between items-center py-3 border-b">
             <div>
-              <p className="font-medium">Account Status</p>
+              <p className="font-medium">ანგარიშის სტატუსი</p>
               <p className="text-sm text-muted-foreground">
-                Your account is active
+                შენი ანგარიში აქტიურია
               </p>
             </div>
-            <span className="text-sm text-green-600 font-medium">Active</span>
+            <span className="text-sm text-green-600 font-medium">აქტიური</span>
           </div>
           <div className="flex justify-between items-center py-3 border-b">
             <div>
-              <p className="font-medium">Account Type</p>
+              <p className="font-medium">ანგარიშის ტიპი</p>
               <p className="text-sm text-muted-foreground">
-                {user.role === 'ADMIN' ? 'Administrator' :
-                 user.role === 'MODERATOR' ? 'Moderator' : 'Standard User'}
+                {user.role === 'ADMIN' ? 'ადმინისტრატორი' :
+                 user.role === 'MODERATOR' ? 'მოდერატორი' : 'მომხმარებელი'}
               </p>
             </div>
             <span className="text-sm text-muted-foreground capitalize">
-              {user.role.toLowerCase()}
+              {(user.role || 'user').toLowerCase()}
             </span>
           </div>
           <div className="flex justify-between items-center py-3">
             <div>
-              <p className="font-medium">Member Since</p>
+              <p className="font-medium">რეგისტრაციის თარიღი</p>
               <p className="text-sm text-muted-foreground">
-                When you joined Rideway
+                როდის შეუერთდი Rideway-ს
               </p>
             </div>
             <span className="text-sm text-muted-foreground">
@@ -249,40 +249,40 @@ export default function AccountSettingsPage() {
         <CardHeader>
           <CardTitle className="text-destructive flex items-center gap-2">
             <AlertTriangle className="h-5 w-5" />
-            Danger Zone
+            საშიში ზონა
           </CardTitle>
           <CardDescription>
-            Irreversible and destructive actions.
+            შეუქცევადი და დესტრუქციული მოქმედებები.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-between p-4 border rounded-lg border-destructive/30 bg-destructive/5">
             <div>
-              <p className="font-medium">Delete Account</p>
+              <p className="font-medium">ანგარიშის წაშლა</p>
               <p className="text-sm text-muted-foreground">
-                Permanently delete your account and all associated data.
+                სამუდამოდ წაშალე ანგარიში და მასთან დაკავშირებული მონაცემები.
               </p>
             </div>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive">Delete Account</Button>
+                <Button variant="destructive">წაშლა</Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogTitle>დარწმუნებული ხარ?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete
-                    your account and remove all your data from our servers,
-                    including your posts, comments, and messages.
+                    ეს მოქმედება შეუქცევადია. ანგარიში და მასთან დაკავშირებული
+                    ყველა მონაცემი, მათ შორის პოსტები, კომენტარები და შეტყობინებები,
+                    სამუდამოდ წაიშლება.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogCancel>გაუქმება</AlertDialogCancel>
                   <AlertDialogAction
                     onClick={handleDeleteAccount}
                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                   >
-                    Delete Account
+                    წაშლა
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>

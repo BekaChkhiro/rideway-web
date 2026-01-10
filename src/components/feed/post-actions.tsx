@@ -68,14 +68,15 @@ export function PostActions({
     toast.success(isSaved ? 'წაიშალა შენახულებიდან' : 'შეინახა');
   };
 
-  const formatCount = (count: number): string => {
-    if (count >= 1000000) {
-      return `${(count / 1000000).toFixed(1)}M`;
+  const formatCount = (count: number | undefined | null): string => {
+    const safeCount = count ?? 0;
+    if (safeCount >= 1000000) {
+      return `${(safeCount / 1000000).toFixed(1)}M`;
     }
-    if (count >= 1000) {
-      return `${(count / 1000).toFixed(1)}K`;
+    if (safeCount >= 1000) {
+      return `${(safeCount / 1000).toFixed(1)}K`;
     }
-    return count.toString();
+    return safeCount.toString();
   };
 
   return (

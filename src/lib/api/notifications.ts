@@ -16,10 +16,10 @@ export async function getNotifications(
 
 // Get unread notifications count
 export async function getUnreadNotificationsCount(): Promise<number> {
-  const response = await apiClient.get<ApiResponse<{ count: number }>>(
+  const response = await apiClient.get<ApiResponse<{ unreadCount: number }>>(
     '/notifications/unread'
   );
-  return response.data.data.count;
+  return response.data.data.unreadCount;
 }
 
 // Mark notification as read

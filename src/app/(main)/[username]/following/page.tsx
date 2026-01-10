@@ -1,5 +1,6 @@
 'use client';
 
+import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
@@ -9,21 +10,17 @@ import { UserList } from '@/components/profile';
 import { useAuth } from '@/hooks/use-auth';
 import { getUserByUsername, getFollowing } from '@/lib/api/users';
 
-interface FollowingPageProps {
-  params: {
-    username: string;
-  };
-}
-
-export default function FollowingPage({ params }: FollowingPageProps) {
+export default function FollowingPage() {
+  const params = useParams<{ username: string }>();
   const { user: currentUser } = useAuth();
 
   const { data: user, isLoading: userLoading } = useQuery({
     queryKey: ['users', params.username],
-    queryFn: () => getUserByUsername(params.username),
+    queryFn: () => getUserByUsername(params.username as string),
+    enabled: !!params.username,
   });
 
-  if (userLoading) {
+  if (!params.username || userLoading) {
     return (
       <div className="flex justify-center py-20">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

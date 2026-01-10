@@ -2,19 +2,11 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useSession } from 'next-auth/react';
-import { Home, Compass, Plus, Mail, User } from 'lucide-react';
+import { Home, Compass, PlusSquare, Store } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
-
-const navItems = [
-  { href: '/feed', label: 'Home', icon: Home },
-  { href: '/explore', label: 'Explore', icon: Compass },
-  { href: '/create', label: 'Create', icon: Plus, isCreate: true },
-  { href: '/messages', label: 'Messages', icon: Mail },
-  { href: '/profile', label: 'Profile', icon: User, isProfile: true },
-];
+import { useAuth } from '@/hooks/use-auth';
 
 interface MobileNavProps {
   className?: string;
@@ -22,16 +14,24 @@ interface MobileNavProps {
 
 export function MobileNav({ className }: MobileNavProps) {
   const pathname = usePathname();
-  const { data: session } = useSession();
+  const { user } = useAuth();
 
-  const user = session?.user;
-  const fullName = (user as { fullName?: string })?.fullName || '';
-  const avatarUrl = (user as { avatarUrl?: string })?.avatarUrl;
-  const initials = fullName
-    ?.split(' ')
+  const initials = (user?.fullName || user?.username || 'U')
+    .split(' ')
     .map((n) => n[0])
     .join('')
-    .toUpperCase() || 'U';
+    .toUpperCase()
+    .slice(0, 2);
+
+  const profileLink = user?.username ? `/${user.username}` : '/login';
+
+  const navItems = [
+    { href: '/', label: 'მთავარი', icon: Home },
+    { href: '/explore', label: 'აღმოჩენა', icon: Compass },
+    { href: '/create', label: 'დამატება', icon: PlusSquare, isCreate: true },
+    { href: '/marketplace', label: 'მარკეტი', icon: Store },
+    { href: profileLink, label: 'პროფილი', isProfile: true },
+  ];
 
   return (
     <nav
@@ -44,10 +44,10 @@ export function MobileNav({ className }: MobileNavProps) {
         {navItems.map((item) => {
           const isActive =
             pathname === item.href || pathname.startsWith(`${item.href}/`);
-          const Icon = item.icon;
 
           // Create button
-          if (item.isCreate) {
+          if (item.isCreate && item.icon) {
+            const Icon = item.icon;
             return (
               <Link
                 key={item.href}
@@ -78,7 +78,7 @@ export function MobileNav({ className }: MobileNavProps) {
                     isActive && 'ring-primary'
                   )}
                 >
-                  <AvatarImage src={avatarUrl || undefined} alt={fullName || 'User'} />
+                  <AvatarImage src={user?.avatarUrl || undefined} alt={user?.fullName || 'User'} />
                   <AvatarFallback className="bg-primary text-primary-foreground text-xs">
                     {initials}
                   </AvatarFallback>
@@ -89,6 +89,8 @@ export function MobileNav({ className }: MobileNavProps) {
           }
 
           // Regular nav item
+          if (!item.icon) return null;
+          const Icon = item.icon;
           return (
             <Link
               key={item.href}

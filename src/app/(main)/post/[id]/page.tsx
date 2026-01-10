@@ -37,10 +37,10 @@ export default function PostDetailPage() {
     router.push('/');
   };
 
-  const handleLikeChange = (isLiked: boolean, likesCount: number) => {
+  const handleLikeChange = (isLiked: boolean, likeCount: number) => {
     queryClient.setQueryData(['posts', postId], (oldPost: typeof post) => {
       if (!oldPost) return oldPost;
-      return { ...oldPost, isLiked, likesCount };
+      return { ...oldPost, isLiked, likeCount };
     });
   };
 
@@ -148,8 +148,8 @@ export default function PostDetailPage() {
         <CardFooter className="py-3">
           <PostActions
             postId={post.id}
-            likesCount={post.likesCount}
-            commentsCount={post.commentsCount}
+            likesCount={post.likeCount ?? 0}
+            commentsCount={post.commentCount ?? 0}
             isLiked={post.isLiked ?? false}
             onLikeChange={handleLikeChange}
             showCommentLink={false}
@@ -160,7 +160,7 @@ export default function PostDetailPage() {
       {/* Comments */}
       <Card>
         <CardHeader>
-          <h2 className="font-semibold">კომენტარები ({post.commentsCount})</h2>
+          <h2 className="font-semibold">კომენტარები ({post.commentCount ?? 0})</h2>
         </CardHeader>
         <CardContent>
           <CommentList postId={post.id} />

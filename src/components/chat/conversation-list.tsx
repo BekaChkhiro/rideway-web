@@ -15,6 +15,7 @@ interface ConversationListProps {
 
 export function ConversationList({ activeConversationId }: ConversationListProps) {
   const setConversations = useChatStore((state) => state.setConversations);
+  const setUnreadCount = useChatStore((state) => state.setUnreadCount);
   const conversations = useChatStore((state) => state.conversations);
   const { ref, inView } = useInView();
 
@@ -37,13 +38,19 @@ export function ConversationList({ activeConversationId }: ConversationListProps
     initialPageParam: 1,
   });
 
-  // Sync conversations to store
+  // Sync conversations to store and calculate total unread count
   useEffect(() => {
     if (data?.pages) {
       const allConversations = data.pages.flatMap((page) => page.conversations);
       setConversations(allConversations);
+      // Calculate total unread count
+      const totalUnread = allConversations.reduce(
+        (sum, conv) => sum + (conv.unreadCount || 0),
+        0
+      );
+      setUnreadCount(totalUnread);
     }
-  }, [data, setConversations]);
+  }, [data, setConversations, setUnreadCount]);
 
   // Load more when scrolled to bottom
   useEffect(() => {

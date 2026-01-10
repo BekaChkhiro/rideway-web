@@ -9,6 +9,7 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { UserAvatar } from '@/components/ui/user-avatar';
 import { PostActions } from './post-actions';
 import { PostMenu } from './post-menu';
+import { PostEditDialog } from './post-edit-dialog';
 import { HashtagBadge } from './hashtag-badge';
 import { PostImages } from './post-images';
 import type { Post } from '@/types';
@@ -16,6 +17,7 @@ import type { Post } from '@/types';
 interface PostCardProps {
   post: Post;
   onDelete?: (postId: string) => void;
+  onUpdate?: (updatedPost: Post) => void;
   onLikeToggle?: (postId: string, isLiked: boolean, likesCount: number) => void;
   showCommentLink?: boolean;
 }
@@ -23,11 +25,23 @@ interface PostCardProps {
 export function PostCard({
   post,
   onDelete,
+  onUpdate,
   onLikeToggle,
   showCommentLink = true,
 }: PostCardProps) {
   const [isLiked, setIsLiked] = useState(post.isLiked ?? false);
-  const [likesCount, setLikesCount] = useState(post.likesCount);
+  const [likesCount, setLikesCount] = useState(post.likeCount ?? 0);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [currentPost, setCurrentPost] = useState(post);
+
+  const handleEdit = () => {
+    setEditDialogOpen(true);
+  };
+
+  const handleEditSuccess = (updatedPost: Post) => {
+    setCurrentPost(updatedPost);
+    onUpdate?.(updatedPost);
+  };
 
   const handleLikeChange = (liked: boolean, count: number) => {
     setIsLiked(liked);
@@ -84,14 +98,14 @@ export function PostCard({
               </div>
             </div>
           </div>
-          <PostMenu post={post} onDelete={onDelete} />
+          <PostMenu post={currentPost} onDelete={onDelete} onEdit={handleEdit} />
         </div>
       </CardHeader>
 
       <CardContent className="pb-3">
         {/* Content */}
         <div className="whitespace-pre-wrap break-words">
-          {renderContent(post.content)}
+          {renderContent(currentPost.content)}
         </div>
 
         {/* Images */}
@@ -106,12 +120,19 @@ export function PostCard({
         <PostActions
           postId={post.id}
           likesCount={likesCount}
-          commentsCount={post.commentsCount}
+          commentsCount={post.commentCount ?? 0}
           isLiked={isLiked}
           onLikeChange={handleLikeChange}
           showCommentLink={showCommentLink}
         />
       </CardFooter>
+
+      <PostEditDialog
+        post={currentPost}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        onSuccess={handleEditSuccess}
+      />
     </Card>
   );
 }

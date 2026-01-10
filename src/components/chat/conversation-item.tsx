@@ -6,6 +6,7 @@ import { ka } from 'date-fns/locale';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { useChatStore, selectIsUserOnline } from '@/stores';
+import { useAuth } from '@/hooks/use-auth';
 import type { Conversation } from '@/types';
 
 interface ConversationItemProps {
@@ -17,19 +18,28 @@ export function ConversationItem({
   conversation,
   isActive,
 }: ConversationItemProps) {
-  const { participant, lastMessage, unreadCount, updatedAt } = conversation;
+  const { participant, lastMessage, lastMessageSenderId, unreadCount, updatedAt } = conversation;
   const isOnline = useChatStore((state) =>
     selectIsUserOnline(state, participant.id)
   );
+  const { user } = useAuth();
+  const isOwnMessage = lastMessageSenderId === user?.id;
 
   const initials = participant.fullName
     ? participant.fullName.slice(0, 2).toUpperCase()
     : participant.username.slice(0, 2).toUpperCase();
 
-  const timeAgo = formatDistanceToNow(new Date(updatedAt), {
-    addSuffix: true,
-    locale: ka,
-  });
+  const getTimeAgo = () => {
+    if (!updatedAt) return '';
+    const date = new Date(updatedAt);
+    if (isNaN(date.getTime())) return '';
+    return formatDistanceToNow(date, {
+      addSuffix: true,
+      locale: ka,
+    });
+  };
+
+  const timeAgo = getTimeAgo();
 
   return (
     <Link
@@ -76,7 +86,11 @@ export function ConversationItem({
                 : 'text-muted-foreground'
             )}
           >
-            {lastMessage?.content || 'დაიწყეთ საუბარი'}
+            {lastMessage
+              ? isOwnMessage
+                ? `თქვენ: ${lastMessage}`
+                : lastMessage
+              : 'დაიწყეთ საუბარი'}
           </p>
 
           {unreadCount > 0 && (

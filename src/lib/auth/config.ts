@@ -27,16 +27,20 @@ interface AuthResponse {
   success: boolean;
   data: {
     user: User;
-    accessToken: string;
-    refreshToken: string;
+    tokens: {
+      accessToken: string;
+      refreshToken: string;
+    };
   };
 }
 
 interface RefreshResponse {
   success: boolean;
   data: {
-    accessToken: string;
-    refreshToken: string;
+    tokens: {
+      accessToken: string;
+      refreshToken: string;
+    };
   };
 }
 
@@ -63,8 +67,8 @@ async function refreshAccessToken(token: {
 
     return {
       ...token,
-      accessToken: data.data.accessToken,
-      refreshToken: data.data.refreshToken,
+      accessToken: data.data.tokens.accessToken,
+      refreshToken: data.data.tokens.refreshToken,
       accessTokenExpires: Date.now() + 14 * 60 * 1000, // 14 minutes
     };
   } catch {
@@ -82,8 +86,27 @@ export const authOptions: NextAuthOptions = {
       credentials: {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
+        // For token-based auth (after OTP verification)
+        accessToken: { label: 'Access Token', type: 'text' },
+        refreshToken: { label: 'Refresh Token', type: 'text' },
+        userData: { label: 'User Data', type: 'text' },
       },
       async authorize(credentials) {
+        // Token-based auth (after OTP verification)
+        if (credentials?.accessToken && credentials?.refreshToken && credentials?.userData) {
+          try {
+            const user = JSON.parse(credentials.userData) as User;
+            return {
+              ...user,
+              accessToken: credentials.accessToken,
+              refreshToken: credentials.refreshToken,
+            };
+          } catch {
+            throw new Error('Invalid user data');
+          }
+        }
+
+        // Regular email/password login
         if (!credentials?.email || !credentials?.password) {
           throw new Error('Email and password are required');
         }
@@ -112,8 +135,8 @@ export const authOptions: NextAuthOptions = {
           // Return user with tokens
           return {
             ...data.data.user,
-            accessToken: data.data.accessToken,
-            refreshToken: data.data.refreshToken,
+            accessToken: data.data.tokens.accessToken,
+            refreshToken: data.data.tokens.refreshToken,
           };
         } catch (error) {
           if (error instanceof Error) {

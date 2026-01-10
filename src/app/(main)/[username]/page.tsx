@@ -1,20 +1,15 @@
 'use client';
 
+import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { notFound } from 'next/navigation';
-import { Loader2, AlertCircle } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Loader2 } from 'lucide-react';
+import { Card } from '@/components/ui/card';
 import { ProfileHeader, ProfileTabs } from '@/components/profile';
 import { useAuth } from '@/hooks/use-auth';
 import { getUserByUsername } from '@/lib/api/users';
 
-interface ProfilePageProps {
-  params: {
-    username: string;
-  };
-}
-
-export default function ProfilePage({ params }: ProfilePageProps) {
+export default function ProfilePage() {
+  const params = useParams<{ username: string }>();
   const { user: currentUser, isLoading: authLoading } = useAuth();
 
   const {
@@ -24,11 +19,12 @@ export default function ProfilePage({ params }: ProfilePageProps) {
     error,
   } = useQuery({
     queryKey: ['users', params.username],
-    queryFn: () => getUserByUsername(params.username),
+    queryFn: () => getUserByUsername(params.username as string),
     retry: false,
+    enabled: !!params.username,
   });
 
-  if (isLoading || authLoading) {
+  if (!params.username || isLoading || authLoading) {
     return (
       <div className="flex justify-center py-20">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -37,37 +33,19 @@ export default function ProfilePage({ params }: ProfilePageProps) {
   }
 
   if (isError) {
-    const errorMessage = (error as Error).message;
-    if (errorMessage.includes('404') || errorMessage.includes('not found')) {
-      notFound();
-    }
     return (
-      <Card>
-        <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-          <AlertCircle className="h-12 w-12 text-destructive mb-4" />
-          <h2 className="text-lg font-semibold mb-2">Error loading profile</h2>
-          <p className="text-muted-foreground">{errorMessage}</p>
-        </CardContent>
-      </Card>
+      <div className="p-8">
+        <h1 className="text-2xl font-bold text-red-500">Error</h1>
+        <p>{(error as Error).message}</p>
+      </div>
     );
   }
 
   if (!user) {
-    notFound();
-  }
-
-  // Check if user is blocked by the profile owner
-  if (user.isBlockedBy) {
     return (
-      <Card>
-        <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-          <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
-          <h2 className="text-lg font-semibold mb-2">Profile unavailable</h2>
-          <p className="text-muted-foreground">
-            You cannot view this profile.
-          </p>
-        </CardContent>
-      </Card>
+      <div className="p-8">
+        <h1 className="text-2xl font-bold">User not found</h1>
+      </div>
     );
   }
 
@@ -75,12 +53,12 @@ export default function ProfilePage({ params }: ProfilePageProps) {
 
   return (
     <div className="space-y-6">
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden py-0">
         <ProfileHeader user={user} isOwnProfile={isOwnProfile} />
       </Card>
 
       <Card className="p-4">
-        <ProfileTabs isOwnProfile={isOwnProfile} />
+        <ProfileTabs userId={user.id} isOwnProfile={isOwnProfile} />
       </Card>
     </div>
   );

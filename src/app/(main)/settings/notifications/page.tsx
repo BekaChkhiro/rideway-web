@@ -40,7 +40,7 @@ export default function NotificationSettingsPage() {
 
   const handleSave = () => {
     // TODO: Implement save notification settings
-    toast.info('Notification settings functionality coming soon');
+    toast.info('შეტყობინებების პარამეტრები მალე დაემატება');
     console.log('Notification settings:', settings);
   };
 
@@ -61,18 +61,18 @@ export default function NotificationSettingsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Bell className="h-5 w-5" />
-            Push Notifications
+            Push შეტყობინებები
           </CardTitle>
           <CardDescription>
-            Manage notifications on your devices.
+            მართე შეტყობინებები მოწყობილობებზე.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="push-enabled">Enable Push Notifications</Label>
+              <Label htmlFor="push-enabled">Push შეტყობინებების ჩართვა</Label>
               <p className="text-sm text-muted-foreground">
-                Receive notifications on your devices.
+                მიიღე შეტყობინებები მოწყობილობაზე.
               </p>
             </div>
             <Switch
@@ -90,7 +90,7 @@ export default function NotificationSettingsPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <Heart className="h-4 w-4 text-muted-foreground" />
-                    <Label htmlFor="push-likes">Likes</Label>
+                    <Label htmlFor="push-likes">მოწონებები</Label>
                   </div>
                   <Switch
                     id="push-likes"
@@ -102,7 +102,7 @@ export default function NotificationSettingsPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                    <Label htmlFor="push-comments">Comments</Label>
+                    <Label htmlFor="push-comments">კომენტარები</Label>
                   </div>
                   <Switch
                     id="push-comments"
@@ -114,7 +114,7 @@ export default function NotificationSettingsPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <UserPlus className="h-4 w-4 text-muted-foreground" />
-                    <Label htmlFor="push-followers">New Followers</Label>
+                    <Label htmlFor="push-followers">ახალი მიმდევრები</Label>
                   </div>
                   <Switch
                     id="push-followers"
@@ -126,7 +126,7 @@ export default function NotificationSettingsPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <Mail className="h-4 w-4 text-muted-foreground" />
-                    <Label htmlFor="push-messages">Direct Messages</Label>
+                    <Label htmlFor="push-messages">პირადი შეტყობინებები</Label>
                   </div>
                   <Switch
                     id="push-messages"
@@ -145,18 +145,18 @@ export default function NotificationSettingsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Mail className="h-5 w-5" />
-            Email Notifications
+            ელ-ფოსტის შეტყობინებები
           </CardTitle>
           <CardDescription>
-            Manage email notifications you receive.
+            მართე ელ-ფოსტით მიღებული შეტყობინებები.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="email-enabled">Enable Email Notifications</Label>
+              <Label htmlFor="email-enabled">ელ-ფოსტის შეტყობინებების ჩართვა</Label>
               <p className="text-sm text-muted-foreground">
-                Receive notifications via email.
+                მიიღე შეტყობინებები ელ-ფოსტით.
               </p>
             </div>
             <Switch
@@ -173,9 +173,9 @@ export default function NotificationSettingsPage() {
               <div className="space-y-4 pl-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label htmlFor="email-digest">Weekly Digest</Label>
+                    <Label htmlFor="email-digest">კვირის შეჯამება</Label>
                     <p className="text-sm text-muted-foreground">
-                      A summary of your activity each week.
+                      აქტივობის შეჯამება ყოველ კვირას.
                     </p>
                   </div>
                   <Switch
@@ -187,9 +187,9 @@ export default function NotificationSettingsPage() {
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label htmlFor="email-follower">New Follower Alerts</Label>
+                    <Label htmlFor="email-follower">ახალი მიმდევრის შეტყობინება</Label>
                     <p className="text-sm text-muted-foreground">
-                      Get notified when someone follows you.
+                      შეტყობინება როცა ვინმე მოგყვება.
                     </p>
                   </div>
                   <Switch
@@ -201,9 +201,9 @@ export default function NotificationSettingsPage() {
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label htmlFor="email-messages">Message Notifications</Label>
+                    <Label htmlFor="email-messages">შეტყობინებების ნოტიფიკაცია</Label>
                     <p className="text-sm text-muted-foreground">
-                      Get notified about new messages.
+                      შეტყობინება ახალ მესიჯებზე.
                     </p>
                   </div>
                   <Switch
@@ -217,9 +217,9 @@ export default function NotificationSettingsPage() {
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label htmlFor="email-marketing">Marketing Emails</Label>
+                    <Label htmlFor="email-marketing">მარკეტინგული ელ-ფოსტა</Label>
                     <p className="text-sm text-muted-foreground">
-                      Receive updates about new features and offers.
+                      მიიღე განახლებები ახალ ფუნქციებსა და შეთავაზებებზე.
                     </p>
                   </div>
                   <Switch
@@ -235,7 +235,7 @@ export default function NotificationSettingsPage() {
       </Card>
 
       <div className="flex justify-end">
-        <Button onClick={handleSave}>Save Changes</Button>
+        <Button onClick={handleSave}>შენახვა</Button>
       </div>
     </div>
   );

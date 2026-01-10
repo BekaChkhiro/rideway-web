@@ -99,19 +99,16 @@ apiClient.interceptors.response.use(
       if (!refreshToken) {
         clearTokens();
         isRefreshing = false;
-        // Redirect to login
-        if (typeof window !== 'undefined') {
-          window.location.href = '/login';
-        }
+        // Don't redirect - let the component handle auth errors
         return Promise.reject(error);
       }
 
       try {
         const response = await axios.post<
-          ApiResponse<{ accessToken: string; refreshToken: string }>
+          ApiResponse<{ tokens: { accessToken: string; refreshToken: string } }>
         >(`${API_URL}/auth/refresh`, { refreshToken });
 
-        const { accessToken, refreshToken: newRefreshToken } = response.data.data;
+        const { accessToken, refreshToken: newRefreshToken } = response.data.data.tokens;
         setTokens(accessToken, newRefreshToken);
 
         isRefreshing = false;
@@ -125,10 +122,7 @@ apiClient.interceptors.response.use(
       } catch (refreshError) {
         isRefreshing = false;
         clearTokens();
-        // Redirect to login
-        if (typeof window !== 'undefined') {
-          window.location.href = '/login';
-        }
+        // Don't redirect - let the component handle auth errors
         return Promise.reject(refreshError);
       }
     }

@@ -74,8 +74,8 @@ export function PostsTable({ posts, onDelete }: PostsTableProps) {
               </TableCell>
               <TableCell>
                 <div className="flex gap-3 text-sm text-muted-foreground">
-                  <span>{post.likesCount} likes</span>
-                  <span>{post.commentsCount} comments</span>
+                  <span>{post.likeCount} likes</span>
+                  <span>{post.commentCount} comments</span>
                 </div>
               </TableCell>
               <TableCell className="text-sm text-muted-foreground">

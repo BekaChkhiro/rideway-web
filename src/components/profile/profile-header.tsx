@@ -26,16 +26,18 @@ interface ProfileHeaderProps {
 export function ProfileHeader({ user, isOwnProfile }: ProfileHeaderProps) {
   const [editModalOpen, setEditModalOpen] = useState(false);
 
-  const initials = user.fullName
+  const initials = (user.fullName || 'U')
     .split(' ')
     .map((n) => n[0])
     .join('')
     .toUpperCase();
 
-  const joinDate = new Date(user.createdAt).toLocaleDateString('ka-GE', {
-    month: 'long',
-    year: 'numeric',
-  });
+  const joinDate = user.createdAt
+    ? new Date(user.createdAt).toLocaleDateString('ka-GE', {
+        month: 'long',
+        year: 'numeric',
+      })
+    : '';
 
   return (
     <>
@@ -65,7 +67,7 @@ export function ProfileHeader({ user, isOwnProfile }: ProfileHeaderProps) {
         <div className="absolute -bottom-16 left-4 sm:left-6">
           <div className="relative">
             <Avatar className="h-28 w-28 sm:h-32 sm:w-32 border-4 border-background">
-              <AvatarImage src={user.avatarUrl || undefined} alt={user.fullName} />
+              <AvatarImage src={user.avatarUrl || undefined} alt={user.fullName || 'User'} />
               <AvatarFallback className="text-2xl sm:text-3xl bg-primary text-primary-foreground">
                 {initials}
               </AvatarFallback>
@@ -84,7 +86,7 @@ export function ProfileHeader({ user, isOwnProfile }: ProfileHeaderProps) {
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           {/* Name and Bio */}
           <div className="flex-1 min-w-0">
-            <h1 className="text-xl sm:text-2xl font-bold truncate">{user.fullName}</h1>
+            <h1 className="text-xl sm:text-2xl font-bold truncate">{user.fullName || 'User'}</h1>
             <p className="text-muted-foreground">@{user.username}</p>
 
             {user.bio && (
@@ -99,10 +101,12 @@ export function ProfileHeader({ user, isOwnProfile }: ProfileHeaderProps) {
                   <span>{user.location}</span>
                 </div>
               )}
-              <div className="flex items-center gap-1">
-                <Calendar className="h-4 w-4" />
-                <span>Joined {joinDate}</span>
-              </div>
+              {joinDate && (
+                <div className="flex items-center gap-1">
+                  <Calendar className="h-4 w-4" />
+                  <span>Joined {joinDate}</span>
+                </div>
+              )}
             </div>
 
             {/* Stats */}
@@ -111,18 +115,18 @@ export function ProfileHeader({ user, isOwnProfile }: ProfileHeaderProps) {
                 href={`/${user.username}/following`}
                 className="hover:underline"
               >
-                <span className="font-semibold">{user.followingCount}</span>{' '}
+                <span className="font-semibold">{user.followingCount ?? 0}</span>{' '}
                 <span className="text-muted-foreground">Following</span>
               </Link>
               <Link
                 href={`/${user.username}/followers`}
                 className="hover:underline"
               >
-                <span className="font-semibold">{user.followersCount}</span>{' '}
+                <span className="font-semibold">{user.followersCount ?? 0}</span>{' '}
                 <span className="text-muted-foreground">Followers</span>
               </Link>
               <div>
-                <span className="font-semibold">{user.postsCount}</span>{' '}
+                <span className="font-semibold">{user.postsCount ?? 0}</span>{' '}
                 <span className="text-muted-foreground">Posts</span>
               </div>
             </div>
@@ -145,7 +149,6 @@ export function ProfileHeader({ user, isOwnProfile }: ProfileHeaderProps) {
                     <MessageButton userId={user.id} />
                   </>
                 )}
-                {!user.isBlockedBy && user.isBlocked && null}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon">

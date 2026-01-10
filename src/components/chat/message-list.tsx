@@ -13,6 +13,8 @@ import { useChatStore, selectTypingInConversation } from '@/stores';
 import { useAuthStore } from '@/stores';
 import type { Message } from '@/types';
 
+const EMPTY_MESSAGES: Message[] = [];
+
 interface MessageListProps {
   conversationId: string;
 }
@@ -42,12 +44,22 @@ export function MessageList({ conversationId }: MessageListProps) {
   const user = useAuthStore((state) => state.user);
   const setMessages = useChatStore((state) => state.setMessages);
   const prependMessages = useChatStore((state) => state.prependMessages);
+  const setReplyTo = useChatStore((state) => state.setReplyTo);
+  const setEditingMessage = useChatStore((state) => state.setEditingMessage);
   const messages = useChatStore(
-    (state) => state.messages[conversationId] || []
+    (state) => state.messages[conversationId] ?? EMPTY_MESSAGES
   );
   const typingUsers = useChatStore((state) =>
     selectTypingInConversation(state, conversationId)
   );
+
+  const handleReply = (message: Message) => {
+    setReplyTo(conversationId, message);
+  };
+
+  const handleEdit = (message: Message) => {
+    setEditingMessage(conversationId, message);
+  };
 
   const { ref: loadMoreRef, inView } = useInView();
 
@@ -165,7 +177,13 @@ export function MessageList({ conversationId }: MessageListProps) {
                 </span>
               </div>
             )}
-            <MessageItem message={message} isOwn={isOwn} />
+            <MessageItem
+              message={message}
+              conversationId={conversationId}
+              isOwn={isOwn}
+              onReply={handleReply}
+              onEdit={handleEdit}
+            />
           </div>
         );
       })}

@@ -59,7 +59,7 @@ export default function SecuritySettingsPage() {
 
   const handlePasswordChange = (data: PasswordFormData) => {
     // TODO: Implement password change
-    toast.info('Password change functionality coming soon');
+    toast.info('პაროლის შეცვლა მალე დაემატება');
     console.log('Password change:', data);
     form.reset();
   };
@@ -81,10 +81,10 @@ export default function SecuritySettingsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Key className="h-5 w-5" />
-            Change Password
+            პაროლის შეცვლა
           </CardTitle>
           <CardDescription>
-            Update your password to keep your account secure.
+            განაახლე პაროლი ანგარიშის უსაფრთხოებისთვის.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -98,11 +98,11 @@ export default function SecuritySettingsPage() {
                 name="currentPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Current Password</FormLabel>
+                    <FormLabel>მიმდინარე პაროლი</FormLabel>
                     <FormControl>
                       <Input
                         type="password"
-                        placeholder="Enter your current password"
+                        placeholder="შეიყვანე მიმდინარე პაროლი"
                         {...field}
                       />
                     </FormControl>
@@ -116,17 +116,16 @@ export default function SecuritySettingsPage() {
                 name="newPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>New Password</FormLabel>
+                    <FormLabel>ახალი პაროლი</FormLabel>
                     <FormControl>
                       <Input
                         type="password"
-                        placeholder="Enter your new password"
+                        placeholder="შეიყვანე ახალი პაროლი"
                         {...field}
                       />
                     </FormControl>
                     <FormDescription>
-                      Must be at least 8 characters with uppercase, lowercase,
-                      and a number.
+                      მინიმუმ 8 სიმბოლო, დიდი და პატარა ასო, და ციფრი.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -138,11 +137,11 @@ export default function SecuritySettingsPage() {
                 name="confirmPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Confirm New Password</FormLabel>
+                    <FormLabel>გაიმეორე ახალი პაროლი</FormLabel>
                     <FormControl>
                       <Input
                         type="password"
-                        placeholder="Confirm your new password"
+                        placeholder="დაადასტურე ახალი პაროლი"
                         {...field}
                       />
                     </FormControl>
@@ -152,7 +151,7 @@ export default function SecuritySettingsPage() {
               />
 
               <div className="flex justify-end">
-                <Button type="submit">Update Password</Button>
+                <Button type="submit">პაროლის განახლება</Button>
               </div>
             </form>
           </Form>
@@ -164,10 +163,10 @@ export default function SecuritySettingsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <ShieldCheck className="h-5 w-5" />
-            Two-Factor Authentication
+            ორფაქტორიანი ავტორიზაცია
           </CardTitle>
           <CardDescription>
-            Add an extra layer of security to your account.
+            დაამატე უსაფრთხოების დამატებითი ფენა.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -177,15 +176,15 @@ export default function SecuritySettingsPage() {
                 <Smartphone className="h-6 w-6" />
               </div>
               <div>
-                <p className="font-medium">Authenticator App</p>
+                <p className="font-medium">ავთენტიფიკატორი აპი</p>
                 <p className="text-sm text-muted-foreground">
-                  Use an authenticator app to generate verification codes.
+                  გამოიყენე აპი ვერიფიკაციის კოდების გენერაციისთვის.
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <Badge variant="outline">Not enabled</Badge>
-              <Button variant="outline">Enable</Button>
+              <Badge variant="outline">გამორთულია</Badge>
+              <Button variant="outline">ჩართვა</Button>
             </div>
           </div>
         </CardContent>
@@ -194,9 +193,9 @@ export default function SecuritySettingsPage() {
       {/* Active Sessions */}
       <Card>
         <CardHeader>
-          <CardTitle>Active Sessions</CardTitle>
+          <CardTitle>აქტიური სესიები</CardTitle>
           <CardDescription>
-            Manage your active sessions across devices.
+            მართე აქტიური სესიები სხვადასხვა მოწყობილობებზე.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -204,18 +203,18 @@ export default function SecuritySettingsPage() {
             <div className="flex items-center justify-between p-4 border rounded-lg bg-primary/5">
               <div>
                 <div className="flex items-center gap-2">
-                  <p className="font-medium">Current Session</p>
-                  <Badge className="bg-green-500">Active</Badge>
+                  <p className="font-medium">მიმდინარე სესია</p>
+                  <Badge className="bg-green-500">აქტიური</Badge>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">
-                  This device - Last active now
+                  ეს მოწყობილობა - ბოლოს აქტიური ახლა
                 </p>
               </div>
             </div>
 
             <div className="flex justify-end">
               <Button variant="outline" className="text-destructive">
-                Sign out all other sessions
+                გასვლა ყველა სხვა სესიიდან
               </Button>
             </div>
           </div>

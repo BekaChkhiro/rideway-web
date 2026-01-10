@@ -203,6 +203,8 @@ export function StoryViewer({
             fill
             className="object-contain"
             priority
+            loading="eager"
+            sizes="(max-width: 768px) 100vw, 448px"
           />
         ) : (
           <video

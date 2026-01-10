@@ -92,16 +92,22 @@ export function OtpForm() {
     setIsLoading(true);
 
     try {
-      const result = await verifyOtp({ userId, code: fullCode });
+      const result = await verifyOtp({ userId, code: fullCode, type: 'EMAIL' });
 
       toast.success('ანგარიში წარმატებით დადასტურდა!');
 
-      // Sign in automatically
-      await signIn('credentials', {
-        email: result.user.email,
-        password: '', // Not needed since we have tokens
+      // Sign in with tokens
+      const signInResult = await signIn('credentials', {
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
+        userData: JSON.stringify(result.user),
         redirect: false,
       });
+
+      if (signInResult?.error) {
+        toast.error('სესიის შექმნა ვერ მოხერხდა');
+        return;
+      }
 
       router.push('/');
       router.refresh();

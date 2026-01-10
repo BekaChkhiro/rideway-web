@@ -6,178 +6,151 @@ import {
   Home,
   Compass,
   Store,
-  Wrench,
   MessageSquare,
   MapPin,
   Mail,
-  ChevronLeft,
-  ChevronRight,
+  Settings,
 } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/use-auth';
+import { useChatStore } from '@/stores';
 
-const navItems = [
-  { href: '/', label: 'Feed', icon: Home },
-  { href: '/explore', label: 'Explore', icon: Compass },
-  { href: '/marketplace', label: 'Marketplace', icon: Store },
-  { href: '/parts', label: 'Parts', icon: Wrench },
-  { href: '/forum', label: 'Forum', icon: MessageSquare },
-  { href: '/services', label: 'Services', icon: MapPin },
-  { href: '/messages', label: 'Messages', icon: Mail },
+const mainNavItems = [
+  { href: '/', label: 'მთავარი', icon: Home },
+  { href: '/explore', label: 'აღმოჩენა', icon: Compass },
+  { href: '/marketplace', label: 'მარკეტი', icon: Store },
+  { href: '/forum', label: 'ფორუმი', icon: MessageSquare },
+  { href: '/services', label: 'სერვისები', icon: MapPin },
 ];
 
-// TODO: Replace with actual user data from auth
-const mockUser = {
-  name: 'Demo User',
-  email: 'demo@rideway.ge',
-  image: null as string | null,
-};
+const secondaryNavItems = [
+  { href: '/messages', label: 'შეტყობინებები', icon: Mail },
+];
 
 interface SidebarProps {
-  isCollapsed?: boolean;
-  onToggle?: () => void;
   className?: string;
 }
 
-export function Sidebar({ isCollapsed = false, onToggle, className }: SidebarProps) {
+export function Sidebar({ className }: SidebarProps) {
   const pathname = usePathname();
+  const { user } = useAuth();
+  const unreadCount = useChatStore((state) => state.unreadCount);
+  const isUnreadCountLoaded = useChatStore((state) => state.isUnreadCountLoaded);
 
-  const user = mockUser;
-  const initials = user?.name
-    ?.split(' ')
+  const initials = (user?.fullName || user?.username || 'U')
+    .split(' ')
     .map((n) => n[0])
     .join('')
-    .toUpperCase() || 'U';
+    .toUpperCase()
+    .slice(0, 2);
+
+  const profileLink = user?.username ? `/${user.username}` : '/login';
+
+  const NavItem = ({ item, badge, badgeLoading }: { item: typeof mainNavItems[0]; badge?: number; badgeLoading?: boolean }) => {
+    const isActive = pathname === item.href ||
+      (item.href !== '/' && pathname.startsWith(`${item.href}/`));
+    const Icon = item.icon;
+
+    return (
+      <Link href={item.href}>
+        <div
+          className={cn(
+            'group relative flex h-11 items-center gap-3 rounded-xl px-3 transition-all duration-200',
+            isActive
+              ? 'bg-gradient-to-r from-primary/15 via-primary/10 to-transparent text-primary font-medium shadow-sm'
+              : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+          )}
+        >
+          {isActive && (
+            <div className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-primary" />
+          )}
+          <Icon className={cn(
+            'h-5 w-5 shrink-0 transition-transform duration-200',
+            !isActive && 'group-hover:scale-110'
+          )} />
+          <span className="truncate flex-1">{item.label}</span>
+          {badgeLoading ? (
+            <div className="h-5 w-5 rounded-full bg-muted animate-pulse" />
+          ) : badge && badge > 0 ? (
+            <Badge variant="destructive" className="h-5 min-w-5 px-1.5 text-xs">
+              {badge > 99 ? '99+' : badge}
+            </Badge>
+          ) : null}
+        </div>
+      </Link>
+    );
+  };
 
   return (
-    <TooltipProvider delayDuration={0}>
-      <aside
-        className={cn(
-          'relative flex h-full flex-col border-r border-border/40 bg-background/50 backdrop-blur-sm transition-all duration-300',
-          isCollapsed ? 'w-16' : 'w-64',
-          className
-        )}
-      >
-        {/* Navigation */}
-        <ScrollArea className="flex-1 py-4">
-          <nav className="flex flex-col gap-1 px-2">
-            {navItems.map((item) => {
-              const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
-              const Icon = item.icon;
+    <aside
+      className={cn(
+        'flex h-full w-64 flex-col bg-gradient-to-b from-background via-background to-muted/20',
+        'border-r border-border/50',
+        className
+      )}
+    >
+      {/* Main Navigation */}
+      <ScrollArea className="flex-1">
+        <nav className="flex flex-col gap-1.5 px-3 py-4">
+          {/* Main section */}
+          <span className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+            მენიუ
+          </span>
+          {mainNavItems.map((item) => (
+            <NavItem key={item.href} item={item} />
+          ))}
 
-              if (isCollapsed) {
-                return (
-                  <Tooltip key={item.href}>
-                    <TooltipTrigger asChild>
-                      <Link href={item.href}>
-                        <Button
-                          variant={isActive ? 'secondary' : 'ghost'}
-                          size="icon"
-                          className={cn(
-                            'h-10 w-10',
-                            isActive && 'bg-primary/10 text-primary hover:bg-primary/20'
-                          )}
-                        >
-                          <Icon className="h-5 w-5" />
-                          <span className="sr-only">{item.label}</span>
-                        </Button>
-                      </Link>
-                    </TooltipTrigger>
-                    <TooltipContent side="right">
-                      {item.label}
-                    </TooltipContent>
-                  </Tooltip>
-                );
-              }
+          {/* Divider */}
+          <div className="mx-3 my-3 h-px bg-gradient-to-r from-transparent via-border/60 to-transparent" />
 
-              return (
-                <Link key={item.href} href={item.href}>
-                  <Button
-                    variant={isActive ? 'secondary' : 'ghost'}
-                    className={cn(
-                      'w-full justify-start gap-3',
-                      isActive && 'bg-primary/10 text-primary hover:bg-primary/20'
-                    )}
-                  >
-                    <Icon className="h-5 w-5" />
-                    <span>{item.label}</span>
-                  </Button>
-                </Link>
-              );
-            })}
-          </nav>
-        </ScrollArea>
+          {/* Secondary section */}
+          <span className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+            კომუნიკაცია
+          </span>
+          {secondaryNavItems.map((item) => (
+            <NavItem
+              key={item.href}
+              item={item}
+              badge={item.href === '/messages' ? unreadCount : undefined}
+              badgeLoading={item.href === '/messages' && !isUnreadCountLoaded}
+            />
+          ))}
+        </nav>
+      </ScrollArea>
 
-        {/* User section */}
-        <div className="border-t border-border/40 p-3">
-          {isCollapsed ? (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link href="/profile">
-                  <Button variant="ghost" size="icon" className="h-10 w-10">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={user?.image || undefined} alt={user?.name || 'User'} />
-                      <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                        {initials}
-                      </AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">
-                {user?.name || 'Profile'}
-              </TooltipContent>
-            </Tooltip>
-          ) : (
-            <Link href="/profile">
-              <Button
-                variant="ghost"
-                className="w-full justify-start gap-3 h-auto py-2"
-              >
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={user?.image || undefined} alt={user?.name || 'User'} />
-                  <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col items-start text-left">
-                  <span className="text-sm font-medium">{user?.name}</span>
-                  <span className="text-xs text-muted-foreground">View profile</span>
-                </div>
-              </Button>
-            </Link>
-          )}
-        </div>
-
-        {/* Collapse toggle */}
-        {onToggle && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute -right-3 top-6 h-6 w-6 rounded-full border bg-background shadow-sm"
-            onClick={onToggle}
-          >
-            {isCollapsed ? (
-              <ChevronRight className="h-3 w-3" />
-            ) : (
-              <ChevronLeft className="h-3 w-3" />
-            )}
-            <span className="sr-only">
-              {isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            </span>
-          </Button>
-        )}
-      </aside>
-    </TooltipProvider>
+      {/* User Section */}
+      <div className={cn(
+        'border-t border-border/50 p-3',
+        'bg-gradient-to-t from-muted/30 to-transparent'
+      )}>
+        <Link href={profileLink}>
+          <div className="group flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-muted/60">
+            <div className="relative">
+              <div className="absolute -inset-1 rounded-full bg-gradient-to-br from-primary/20 to-primary/0 opacity-0 blur transition-opacity group-hover:opacity-100" />
+              <Avatar className="relative h-10 w-10 ring-2 ring-border/50 transition-all group-hover:ring-primary/30">
+                <AvatarImage src={user?.avatarUrl || undefined} alt={user?.fullName || 'User'} />
+                <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground text-sm font-medium">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+            </div>
+            <div className="flex flex-1 flex-col overflow-hidden">
+              <span className="truncate text-sm font-medium">
+                {user?.fullName || user?.username}
+              </span>
+              <span className="truncate text-xs text-muted-foreground">
+                @{user?.username}
+              </span>
+            </div>
+            <Settings className="h-4 w-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+          </div>
+        </Link>
+      </div>
+    </aside>
   );
 }
 
@@ -188,58 +161,108 @@ interface MobileSidebarProps {
 
 export function MobileSidebar({ onClose }: MobileSidebarProps) {
   const pathname = usePathname();
+  const { user } = useAuth();
+  const unreadCount = useChatStore((state) => state.unreadCount);
+  const isUnreadCountLoaded = useChatStore((state) => state.isUnreadCountLoaded);
 
-  const user = mockUser;
-  const initials = user?.name
-    ?.split(' ')
+  const initials = (user?.fullName || user?.username || 'U')
+    .split(' ')
     .map((n) => n[0])
     .join('')
-    .toUpperCase() || 'U';
+    .toUpperCase()
+    .slice(0, 2);
+
+  const profileLink = user?.username ? `/${user.username}` : '/login';
+
+  const MobileNavItem = ({ item, badge, badgeLoading }: { item: typeof mainNavItems[0]; badge?: number; badgeLoading?: boolean }) => {
+    const isActive = pathname === item.href ||
+      (item.href !== '/' && pathname.startsWith(`${item.href}/`));
+    const Icon = item.icon;
+
+    return (
+      <Link href={item.href} onClick={onClose}>
+        <div
+          className={cn(
+            'group relative flex h-12 items-center gap-3 rounded-xl px-3 transition-all duration-200',
+            isActive
+              ? 'bg-gradient-to-r from-primary/15 via-primary/10 to-transparent text-primary font-medium'
+              : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+          )}
+        >
+          {isActive && (
+            <div className="absolute left-0 top-1/2 h-7 w-1 -translate-y-1/2 rounded-r-full bg-primary" />
+          )}
+          <Icon className="h-5 w-5 shrink-0" />
+          <span className="text-[15px] flex-1">{item.label}</span>
+          {badgeLoading ? (
+            <div className="h-5 w-5 rounded-full bg-muted animate-pulse" />
+          ) : badge && badge > 0 ? (
+            <Badge variant="destructive" className="h-5 min-w-5 px-1.5 text-xs">
+              {badge > 99 ? '99+' : badge}
+            </Badge>
+          ) : null}
+        </div>
+      </Link>
+    );
+  };
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col bg-gradient-to-b from-background to-muted/20">
       {/* User section at top */}
-      <div className="border-b p-4">
-        <Link href="/profile" onClick={onClose}>
-          <div className="flex items-center gap-3">
-            <Avatar className="h-12 w-12">
-              <AvatarImage src={user?.image || undefined} alt={user?.name || 'User'} />
-              <AvatarFallback className="bg-primary text-primary-foreground">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
+      <div className="border-b border-border/50 p-4">
+        <Link href={profileLink} onClick={onClose}>
+          <div className="group flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-muted/60">
+            <div className="relative">
+              <Avatar className="h-11 w-11 ring-2 ring-border/50">
+                <AvatarImage src={user?.avatarUrl || undefined} alt={user?.fullName || 'User'} />
+                <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground font-medium">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+            </div>
             <div className="flex flex-col">
-              <span className="font-medium">{user?.name}</span>
-              <span className="text-sm text-muted-foreground">{user?.email}</span>
+              <span className="font-medium">{user?.fullName || user?.username}</span>
+              <span className="text-sm text-muted-foreground">@{user?.username}</span>
             </div>
           </div>
         </Link>
       </div>
 
       {/* Navigation */}
-      <ScrollArea className="flex-1 py-4">
-        <nav className="flex flex-col gap-1 px-2">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
-            const Icon = item.icon;
+      <ScrollArea className="flex-1">
+        <nav className="flex flex-col gap-1 px-3 py-4">
+          <span className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+            მენიუ
+          </span>
+          {mainNavItems.map((item) => (
+            <MobileNavItem key={item.href} item={item} />
+          ))}
 
-            return (
-              <Link key={item.href} href={item.href} onClick={onClose}>
-                <Button
-                  variant={isActive ? 'secondary' : 'ghost'}
-                  className={cn(
-                    'w-full justify-start gap-3 text-base',
-                    isActive && 'bg-primary/10 text-primary hover:bg-primary/20'
-                  )}
-                >
-                  <Icon className="h-5 w-5" />
-                  <span>{item.label}</span>
-                </Button>
-              </Link>
-            );
-          })}
+          <div className="mx-3 my-3 h-px bg-gradient-to-r from-transparent via-border/60 to-transparent" />
+
+          <span className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+            კომუნიკაცია
+          </span>
+          {secondaryNavItems.map((item) => (
+            <MobileNavItem
+              key={item.href}
+              item={item}
+              badge={item.href === '/messages' ? unreadCount : undefined}
+              badgeLoading={item.href === '/messages' && !isUnreadCountLoaded}
+            />
+          ))}
         </nav>
       </ScrollArea>
+
+      {/* Settings at bottom */}
+      <div className="border-t border-border/50 bg-gradient-to-t from-muted/30 to-transparent p-3">
+        <Link href="/settings" onClick={onClose}>
+          <div className="flex h-11 items-center gap-3 rounded-xl px-3 text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground">
+            <Settings className="h-5 w-5" />
+            <span className="text-[15px]">პარამეტრები</span>
+          </div>
+        </Link>
+      </div>
     </div>
   );
 }

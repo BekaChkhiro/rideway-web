@@ -23,7 +23,7 @@ export function Providers({ children }: ProvidersProps) {
           <SocketProvider>
             {children}
           </SocketProvider>
-          <Toaster position="top-center" richColors closeButton />
+          <Toaster position="bottom-right" richColors closeButton />
         </QueryProvider>
       </ThemeProvider>
     </AuthProvider>

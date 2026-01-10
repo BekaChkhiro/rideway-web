@@ -10,10 +10,10 @@ import { PageHeader } from '@/components/shared/page-header';
 import { PostCard, PostCardSkeleton } from '@/components/feed/post-card';
 import { EmptyState } from '@/components/shared/empty-state';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { getTrendingPosts, getTrendingHashtags } from '@/lib/api';
+import { AdBanner } from '@/components/ads/ad-banner';
 import type { Post } from '@/types';
 
 export default function ExplorePage() {
@@ -113,44 +113,60 @@ export default function ExplorePage() {
 
         {/* Sidebar */}
         <div className="space-y-6">
+          {/* Ad Banner */}
+          <AdBanner size="medium" />
+
           {/* Trending hashtags */}
-          <Card>
+          <Card className="border-border/50 shadow-premium">
             <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Hash className="h-4 w-4" />
+              <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
+                  <Hash className="h-4 w-4 text-primary" />
+                </div>
                 პოპულარული ჰეშთეგები
               </CardTitle>
             </CardHeader>
             <CardContent>
               {isHashtagsLoading ? (
-                <div className="flex flex-wrap gap-2">
+                <div className="space-y-3">
                   {[...Array(6)].map((_, i) => (
-                    <div
-                      key={i}
-                      className="h-6 w-20 bg-muted animate-pulse rounded-full"
-                    />
+                    <div key={i} className="flex items-center justify-between">
+                      <div className="h-5 w-24 bg-muted animate-pulse rounded" />
+                      <div className="h-4 w-8 bg-muted animate-pulse rounded" />
+                    </div>
                   ))}
                 </div>
               ) : hashtags && hashtags.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {hashtags.map((hashtag) => (
+                <div className="space-y-1">
+                  {hashtags.map((hashtag, index) => (
                     <Link
                       key={hashtag.id}
                       href={`/hashtag/${encodeURIComponent(hashtag.name)}`}
+                      className="flex items-center justify-between py-2.5 px-3 -mx-3 rounded-lg hover:bg-muted/50 transition-colors group"
                     >
-                      <Badge variant="secondary" className="hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer">
-                        #{hashtag.name}
-                        <span className="ml-1 text-xs opacity-70">
-                          {hashtag.postsCount}
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs font-medium text-muted-foreground w-4">
+                          {index + 1}
                         </span>
-                      </Badge>
+                        <span className="font-medium text-foreground group-hover:text-primary transition-colors">
+                          #{hashtag.name}
+                        </span>
+                      </div>
+                      <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                        {hashtag.postsCount} პოსტი
+                      </span>
                     </Link>
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">
-                  ჯერ არ არის ჰეშთეგები
-                </p>
+                <div className="text-center py-6">
+                  <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-muted/50 flex items-center justify-center">
+                    <Hash className="h-6 w-6 text-muted-foreground" />
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    ჯერ არ არის ჰეშთეგები
+                  </p>
+                </div>
               )}
             </CardContent>
           </Card>

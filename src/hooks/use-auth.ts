@@ -2,9 +2,9 @@
 
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useAuthStore } from '@/stores';
-import { clearTokens } from '@/lib/api';
+import { clearTokens, setTokens } from '@/lib/api';
 import type { User } from '@/types';
 
 export function useAuth() {
@@ -45,10 +45,18 @@ export function useAuth() {
     router.push('/login');
   }, [router, logoutStore]);
 
-  // Update user in store when session changes
-  if (user && !isLoading) {
-    setUser(user);
-  }
+  // Update user in store and sync tokens when session changes
+  useEffect(() => {
+    if (session && !isLoading) {
+      if (user) {
+        setUser(user);
+      }
+      // Sync tokens to localStorage for API client
+      if (session.accessToken && session.refreshToken) {
+        setTokens(session.accessToken, session.refreshToken);
+      }
+    }
+  }, [session, user, isLoading, setUser]);
 
   return {
     user,

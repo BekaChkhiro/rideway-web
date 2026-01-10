@@ -29,6 +29,7 @@ import {
 } from '@/components/ui/card';
 
 import { loginSchema, type LoginFormData } from '@/lib/validations/auth';
+import { loginDirect } from '@/lib/api/auth';
 
 export function LoginForm() {
   const router = useRouter();
@@ -47,9 +48,14 @@ export function LoginForm() {
     setIsLoading(true);
 
     try {
+      // First login via API (stores tokens in localStorage)
+      const authResult = await loginDirect(data.email, data.password);
+
+      // Then create NextAuth session with tokens
       const result = await signIn('credentials', {
-        email: data.email,
-        password: data.password,
+        accessToken: authResult.accessToken,
+        refreshToken: authResult.refreshToken,
+        userData: JSON.stringify(authResult.user),
         redirect: false,
       });
 
@@ -61,8 +67,12 @@ export function LoginForm() {
       toast.success('წარმატებით შეხვედით!');
       router.push('/');
       router.refresh();
-    } catch {
-      toast.error('დაფიქსირდა შეცდომა. სცადეთ თავიდან.');
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error('დაფიქსირდა შეცდომა. სცადეთ თავიდან.');
+      }
     } finally {
       setIsLoading(false);
     }

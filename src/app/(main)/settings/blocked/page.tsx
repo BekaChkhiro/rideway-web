@@ -17,8 +17,8 @@ function BlockedUsersList() {
     <UserList
       queryKey={['users', 'blocked']}
       queryFn={getBlockedUsers}
-      emptyTitle="No blocked users"
-      emptyDescription="Users you block will appear here."
+      emptyTitle="დაბლოკილი მომხმარებლები არ არის"
+      emptyDescription="დაბლოკილი მომხმარებლები აქ გამოჩნდებიან."
       showFollowButton={false}
     />
   );
@@ -43,11 +43,11 @@ export default function BlockedUsersPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Ban className="h-5 w-5" />
-            Blocked Users
+            დაბლოკილი მომხმარებლები
           </CardTitle>
           <CardDescription>
-            Users you have blocked. They cannot see your profile, posts, or
-            send you messages.
+            მომხმარებლები რომლებიც დაბლოკე. ისინი ვერ ხედავენ შენს პროფილს, პოსტებს
+            და ვერ გწერენ შეტყობინებებს.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -57,26 +57,26 @@ export default function BlockedUsersPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>What happens when you block someone?</CardTitle>
+          <CardTitle>რა ხდება როცა ვინმეს დაბლოკავ?</CardTitle>
         </CardHeader>
         <CardContent>
           <ul className="space-y-3 text-sm text-muted-foreground">
             <li className="flex items-start gap-2">
               <UserX className="h-4 w-4 mt-0.5 text-destructive" />
-              <span>They won&apos;t be able to find your profile or posts.</span>
+              <span>ისინი ვერ იპოვიან შენს პროფილს და პოსტებს.</span>
             </li>
             <li className="flex items-start gap-2">
               <UserX className="h-4 w-4 mt-0.5 text-destructive" />
-              <span>They can&apos;t send you messages or follow you.</span>
+              <span>ვერ გამოგიგზავნიან შეტყობინებას და ვერ მოგყვებიან.</span>
             </li>
             <li className="flex items-start gap-2">
               <UserX className="h-4 w-4 mt-0.5 text-destructive" />
-              <span>They won&apos;t be notified that you blocked them.</span>
+              <span>მათ არ მიიღებენ შეტყობინებას დაბლოკვის შესახებ.</span>
             </li>
             <li className="flex items-start gap-2">
               <UserX className="h-4 w-4 mt-0.5 text-destructive" />
               <span>
-                If you were following each other, you will both unfollow.
+                თუ ერთმანეთს მიყვებოდით, ორივე გაუნფოლოვდებით.
               </span>
             </li>
           </ul>

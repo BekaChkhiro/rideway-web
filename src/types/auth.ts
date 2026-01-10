@@ -18,6 +18,7 @@ export interface RegisterData {
 export interface VerifyOtpData {
   userId: string;
   code: string;
+  type: 'EMAIL' | 'PHONE';
 }
 
 export interface ForgotPasswordData {

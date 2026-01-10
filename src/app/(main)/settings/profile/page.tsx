@@ -88,10 +88,10 @@ export default function ProfileSettingsPage() {
       setCoverFile(null);
       setAvatarPreview(null);
       setCoverPreview(null);
-      toast.success('Profile updated successfully');
+      toast.success('პროფილი წარმატებით განახლდა');
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to update profile');
+      toast.error(error.message || 'პროფილის განახლება ვერ მოხერხდა');
     },
   });
 
@@ -100,10 +100,10 @@ export default function ProfileSettingsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
-      toast.success('Avatar removed');
+      toast.success('ავატარი წაიშალა');
     },
     onError: () => {
-      toast.error('Failed to remove avatar');
+      toast.error('ავატარის წაშლა ვერ მოხერხდა');
     },
   });
 
@@ -112,10 +112,10 @@ export default function ProfileSettingsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
-      toast.success('Cover image removed');
+      toast.success('გარეკანის ფოტო წაიშალა');
     },
     onError: () => {
-      toast.error('Failed to remove cover image');
+      toast.error('გარეკანის ფოტოს წაშლა ვერ მოხერხდა');
     },
   });
 
@@ -145,20 +145,21 @@ export default function ProfileSettingsPage() {
     );
   }
 
-  const initials = user.fullName
+  const initials = (user.fullName || user.username || 'U')
     .split(' ')
     .map((n) => n[0])
     .join('')
-    .toUpperCase();
+    .toUpperCase()
+    .slice(0, 2);
 
   return (
     <div className="space-y-6">
       {/* Cover Image */}
       <Card>
         <CardHeader>
-          <CardTitle>Cover Image</CardTitle>
+          <CardTitle>გარეკანის ფოტო</CardTitle>
           <CardDescription>
-            This image will be displayed at the top of your profile.
+            ეს სურათი გამოჩნდება პროფილის ზედა ნაწილში.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -176,7 +177,7 @@ export default function ProfileSettingsPage() {
               <Button type="button" variant="outline" asChild>
                 <span>
                   <Camera className="h-4 w-4 mr-2" />
-                  Change Cover
+                  შეცვლა
                 </span>
               </Button>
               <input
@@ -197,7 +198,7 @@ export default function ProfileSettingsPage() {
                 {deleteCoverMutation.isPending ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  'Remove'
+                  'წაშლა'
                 )}
               </Button>
             )}
@@ -208,9 +209,9 @@ export default function ProfileSettingsPage() {
       {/* Avatar */}
       <Card>
         <CardHeader>
-          <CardTitle>Profile Photo</CardTitle>
+          <CardTitle>პროფილის ფოტო</CardTitle>
           <CardDescription>
-            Your profile photo will be displayed across the platform.
+            შენი პროფილის ფოტო გამოჩნდება პლატფორმის მასშტაბით.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -229,7 +230,7 @@ export default function ProfileSettingsPage() {
                 <Button type="button" variant="outline" asChild>
                   <span>
                     <Camera className="h-4 w-4 mr-2" />
-                    Change Photo
+                    შეცვლა
                   </span>
                 </Button>
                 <input
@@ -250,7 +251,7 @@ export default function ProfileSettingsPage() {
                   {deleteAvatarMutation.isPending ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    'Remove'
+                    'წაშლა'
                   )}
                 </Button>
               )}
@@ -262,9 +263,9 @@ export default function ProfileSettingsPage() {
       {/* Profile Information */}
       <Card>
         <CardHeader>
-          <CardTitle>Profile Information</CardTitle>
+          <CardTitle>პროფილის ინფორმაცია</CardTitle>
           <CardDescription>
-            Update your profile details visible to other users.
+            განაახლე პროფილის დეტალები რომელიც სხვა მომხმარებლებს ჩანს.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -278,9 +279,9 @@ export default function ProfileSettingsPage() {
                 name="fullName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Full Name</FormLabel>
+                    <FormLabel>სახელი და გვარი</FormLabel>
                     <FormControl>
-                      <Input placeholder="Your name" {...field} />
+                      <Input placeholder="შენი სახელი" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -292,13 +293,12 @@ export default function ProfileSettingsPage() {
                 name="username"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Username</FormLabel>
+                    <FormLabel>მომხმარებლის სახელი</FormLabel>
                     <FormControl>
                       <Input placeholder="username" {...field} />
                     </FormControl>
                     <FormDescription>
-                      Your unique username on Rideway. This will be part of your
-                      profile URL.
+                      შენი უნიკალური სახელი Rideway-ზე. ეს იქნება პროფილის URL-ის ნაწილი.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -310,16 +310,16 @@ export default function ProfileSettingsPage() {
                 name="bio"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Bio</FormLabel>
+                    <FormLabel>ბიო</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Tell us about yourself..."
+                        placeholder="მოგვიყევი შენს შესახებ..."
                         className="resize-none"
                         {...field}
                       />
                     </FormControl>
                     <FormDescription>
-                      {field.value?.length || 0}/160 characters
+                      {field.value?.length || 0}/160 სიმბოლო
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -331,9 +331,9 @@ export default function ProfileSettingsPage() {
                 name="location"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Location</FormLabel>
+                    <FormLabel>მდებარეობა</FormLabel>
                     <FormControl>
-                      <Input placeholder="City, Country" {...field} />
+                      <Input placeholder="ქალაქი, ქვეყანა" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -347,7 +347,7 @@ export default function ProfileSettingsPage() {
                   {updateMutation.isPending && (
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   )}
-                  Save Changes
+                  შენახვა
                 </Button>
               </div>
             </form>
