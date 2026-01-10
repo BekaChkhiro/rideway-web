@@ -76,7 +76,7 @@ function getNotificationLink(notification: Notification): string | null {
     case 'THREAD_REPLY':
       return data.threadId ? `/forum/${data.threadId}` : null;
     case 'LISTING_INQUIRY':
-      return data.listingId ? `/marketplace/${data.listingId}` : null;
+      return data.listingId ? `/marketplace/listing/${data.listingId}` : null;
     case 'SERVICE_REVIEW':
       return data.serviceId ? `/services/${data.serviceId}` : null;
     case 'STORY_VIEW':

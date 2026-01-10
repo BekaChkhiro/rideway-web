@@ -13,6 +13,20 @@ import { ConditionBadge } from './condition-badge';
 import { FavoriteButton } from './favorite-button';
 import { cn } from '@/lib/utils';
 import type { Listing } from '@/types';
+import { LOCATION_TYPES } from '@/types';
+
+// Helper to format location display
+function getLocationDisplay(listing: Listing): string | null {
+  if (!listing.locationType) return null;
+  const typeLabel = LOCATION_TYPES.find(t => t.value === listing.locationType)?.label;
+  if (listing.locationType === 'ON_THE_WAY') {
+    return typeLabel ?? null;
+  }
+  if (listing.locationCity) {
+    return listing.locationCity;
+  }
+  return typeLabel ?? null;
+}
 
 interface ListingCardProps {
   listing: Listing;
@@ -35,7 +49,7 @@ export function ListingCard({
 
   if (variant === 'list') {
     return (
-      <Link href={`/marketplace/${listing.id}`}>
+      <Link href={`/marketplace/listing/${listing.id}`}>
         <Card className={cn(
           'overflow-hidden transition-shadow hover:shadow-md',
           isSold && 'opacity-60'
@@ -85,10 +99,10 @@ export function ListingCard({
                   <ConditionBadge condition={listing.condition} />
                 </div>
                 <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                  {listing.location && (
+                  {getLocationDisplay(listing) && (
                     <span className="flex items-center gap-1">
                       <MapPin className="h-3 w-3" />
-                      {listing.location}
+                      {getLocationDisplay(listing)}
                     </span>
                   )}
                   <span className="flex items-center gap-1">
@@ -106,7 +120,7 @@ export function ListingCard({
 
   // Grid variant
   return (
-    <Link href={`/marketplace/${listing.id}`}>
+    <Link href={`/marketplace/listing/${listing.id}`}>
       <Card className={cn(
         'overflow-hidden transition-shadow hover:shadow-md',
         isSold && 'opacity-60'
@@ -164,10 +178,10 @@ export function ListingCard({
 
           <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
             <div className="flex items-center gap-3">
-              {listing.location && (
+              {getLocationDisplay(listing) && (
                 <span className="flex items-center gap-1">
                   <MapPin className="h-3 w-3" />
-                  {listing.location}
+                  {getLocationDisplay(listing)}
                 </span>
               )}
             </div>

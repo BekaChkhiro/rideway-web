@@ -104,13 +104,25 @@ export async function createListing(data: CreateListingData): Promise<Listing> {
   formData.append('title', data.title);
   formData.append('description', data.description);
   formData.append('price', data.price.toString());
+  formData.append('type', data.type);
   formData.append('condition', data.condition);
   formData.append('categoryId', data.categoryId);
 
-  if (data.location) formData.append('location', data.location);
+  // Common optional fields
   if (data.brand) formData.append('brand', data.brand);
   if (data.model) formData.append('model', data.model);
   if (data.year) formData.append('year', data.year.toString());
+
+  // Location fields
+  if (data.locationType) formData.append('locationType', data.locationType);
+  if (data.locationCity) formData.append('locationCity', data.locationCity);
+
+  // Motorcycle-specific fields
+  if (data.motorcycleCategory) formData.append('motorcycleCategory', data.motorcycleCategory);
+  if (data.customsStatus) formData.append('customsStatus', data.customsStatus);
+  if (data.engineCC) formData.append('engineCC', data.engineCC.toString());
+  if (data.mileage !== undefined) formData.append('mileage', data.mileage.toString());
+  if (data.transmission) formData.append('transmission', data.transmission);
 
   if (data.images && data.images.length > 0) {
     data.images.forEach((image) => {

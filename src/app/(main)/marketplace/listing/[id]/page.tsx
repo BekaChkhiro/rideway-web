@@ -44,6 +44,12 @@ import {
   FavoriteButton,
 } from '@/components/marketplace';
 import { getListing, deleteListing, markListingAsSold } from '@/lib/api/listings';
+import {
+  LOCATION_TYPES,
+  MOTORCYCLE_CATEGORIES,
+  CUSTOMS_STATUSES,
+  TRANSMISSIONS,
+} from '@/types';
 
 export default function ListingDetailPage() {
   const params = useParams();
@@ -118,6 +124,21 @@ export default function ListingDetailPage() {
     locale: ka,
   });
 
+  // Helper function to format location
+  const getLocationDisplay = () => {
+    if (!listing.locationType) return null;
+    const typeLabel = LOCATION_TYPES.find(t => t.value === listing.locationType)?.label;
+    if (listing.locationType === 'ON_THE_WAY') {
+      return typeLabel;
+    }
+    if (listing.locationCity) {
+      return `${listing.locationCity}, ${typeLabel}`;
+    }
+    return typeLabel;
+  };
+
+  const locationDisplay = getLocationDisplay();
+
   return (
     <div className="space-y-6">
       {/* Back button */}
@@ -148,10 +169,10 @@ export default function ListingDetailPage() {
                   <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                     <Badge variant="secondary">{listing.category.name}</Badge>
                     <ConditionBadge condition={listing.condition} />
-                    {listing.location && (
+                    {locationDisplay && (
                       <span className="flex items-center gap-1">
                         <MapPin className="h-4 w-4" />
-                        {listing.location}
+                        {locationDisplay}
                       </span>
                     )}
                   </div>
@@ -183,7 +204,7 @@ export default function ListingDetailPage() {
               </div>
 
               {/* Specs */}
-              {(listing.brand || listing.model || listing.year) && (
+              {(listing.brand || listing.model || listing.year || listing.engineCC || listing.mileage || listing.transmission || listing.customsStatus || listing.motorcycleCategory) && (
                 <>
                   <Separator />
                   <div>
@@ -191,7 +212,7 @@ export default function ListingDetailPage() {
                     <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
                       {listing.brand && (
                         <div>
-                          <dt className="text-sm text-muted-foreground">ბრენდი</dt>
+                          <dt className="text-sm text-muted-foreground">მწარმოებელი</dt>
                           <dd className="font-medium">{listing.brand}</dd>
                         </div>
                       )}
@@ -205,6 +226,42 @@ export default function ListingDetailPage() {
                         <div>
                           <dt className="text-sm text-muted-foreground">წელი</dt>
                           <dd className="font-medium">{listing.year}</dd>
+                        </div>
+                      )}
+                      {listing.motorcycleCategory && (
+                        <div>
+                          <dt className="text-sm text-muted-foreground">კატეგორია</dt>
+                          <dd className="font-medium">
+                            {MOTORCYCLE_CATEGORIES.find(c => c.value === listing.motorcycleCategory)?.label}
+                          </dd>
+                        </div>
+                      )}
+                      {listing.engineCC && (
+                        <div>
+                          <dt className="text-sm text-muted-foreground">ძრავი</dt>
+                          <dd className="font-medium">{listing.engineCC} cc</dd>
+                        </div>
+                      )}
+                      {listing.mileage !== null && listing.mileage !== undefined && (
+                        <div>
+                          <dt className="text-sm text-muted-foreground">გარბენი</dt>
+                          <dd className="font-medium">{listing.mileage.toLocaleString()} კმ</dd>
+                        </div>
+                      )}
+                      {listing.transmission && (
+                        <div>
+                          <dt className="text-sm text-muted-foreground">გადაცემათა კოლოფი</dt>
+                          <dd className="font-medium">
+                            {TRANSMISSIONS.find(t => t.value === listing.transmission)?.label}
+                          </dd>
+                        </div>
+                      )}
+                      {listing.customsStatus && (
+                        <div>
+                          <dt className="text-sm text-muted-foreground">განბაჟება</dt>
+                          <dd className="font-medium">
+                            {CUSTOMS_STATUSES.find(c => c.value === listing.customsStatus)?.label}
+                          </dd>
                         </div>
                       )}
                     </div>
@@ -230,7 +287,7 @@ export default function ListingDetailPage() {
             <CardContent className="p-4 space-y-3">
               {isOwner ? (
                 <>
-                  <Link href={`/marketplace/${listing.id}/edit`} className="block">
+                  <Link href={`/marketplace/listing/${listing.id}/edit`} className="block">
                     <Button variant="outline" className="w-full gap-2">
                       <Pencil className="h-4 w-4" />
                       რედაქტირება

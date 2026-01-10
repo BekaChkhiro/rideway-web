@@ -196,7 +196,7 @@ export function ListingsTable({ listings, onDelete }: ListingsTableProps) {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem asChild>
-                      <Link href={`/marketplace/${listing.id}`}>
+                      <Link href={`/marketplace/listing/${listing.id}`}>
                         <Eye className="mr-2 h-4 w-4" />
                         View Listing
                       </Link>

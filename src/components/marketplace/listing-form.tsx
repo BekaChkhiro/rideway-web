@@ -28,21 +28,45 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CategorySelector } from './category-selector';
+import { LocationSelector } from './location-selector';
 import { conditionLabels } from './condition-badge';
 import { createListing, updateListing } from '@/lib/api/listings';
-import type { ListingCategory, ListingCondition, Listing } from '@/types';
+import type {
+  ListingCategory,
+  ListingCondition,
+  Listing,
+  ListingType,
+} from '@/types';
+import {
+  LISTING_TYPES,
+  MOTORCYCLE_CATEGORIES,
+  CUSTOMS_STATUSES,
+  TRANSMISSIONS,
+} from '@/types';
 
 const listingSchema = z.object({
   title: z.string().min(3, 'სათაური მინიმუმ 3 სიმბოლო').max(100, 'მაქსიმუმ 100 სიმბოლო'),
   description: z.string().min(10, 'აღწერა მინიმუმ 10 სიმბოლო').max(2000, 'მაქსიმუმ 2000 სიმბოლო'),
   price: z.number().min(0, 'ფასი არ შეიძლება იყოს უარყოფითი'),
+  type: z.enum(['MOTORCYCLE', 'PARTS', 'EQUIPMENT', 'ACCESSORIES']),
   condition: z.enum(['NEW', 'LIKE_NEW', 'GOOD', 'FAIR', 'PARTS']),
-  categoryId: z.string().min(1, 'აირჩიეთ კატეგორია'),
-  location: z.string().optional(),
+  categoryId: z.string().optional(),
+
+  // Common fields
   brand: z.string().optional(),
   model: z.string().optional(),
   year: z.number().optional(),
+
+  // Location
+  locationType: z.enum(['ON_THE_WAY', 'GEORGIA', 'ABROAD']).optional(),
+  locationCity: z.string().optional(),
+
+  // Motorcycle-specific
+  motorcycleCategory: z.enum(['MOPED', 'CITY', 'SPORT', 'TOURING', 'OFF_ROAD', 'CRUISER']).optional(),
+  customsStatus: z.enum(['CLEARED', 'NOT_CLEARED']).optional(),
+  engineCC: z.number().optional(),
+  mileage: z.number().optional(),
+  transmission: z.enum(['MANUAL', 'AUTOMATIC']).optional(),
 });
 
 type ListingFormData = z.infer<typeof listingSchema>;
@@ -51,14 +75,16 @@ interface ListingFormProps {
   categories: ListingCategory[];
   listing?: Listing;
   mode?: 'create' | 'edit';
+  defaultType?: ListingType;
 }
 
 const conditions: ListingCondition[] = ['NEW', 'LIKE_NEW', 'GOOD', 'FAIR', 'PARTS'];
 
 export function ListingForm({
-  categories,
+  categories: _categories,
   listing,
   mode = 'create',
+  defaultType = 'MOTORCYCLE',
 }: ListingFormProps) {
   const router = useRouter();
   const [images, setImages] = useState<File[]>([]);
@@ -73,14 +99,24 @@ export function ListingForm({
       title: listing?.title || '',
       description: listing?.description || '',
       price: listing?.price || 0,
+      type: listing?.type || defaultType,
       condition: listing?.condition || 'GOOD',
-      categoryId: listing?.category.id || '',
-      location: listing?.location || '',
+      categoryId: listing?.category?.id || '',
       brand: listing?.brand || '',
       model: listing?.model || '',
       year: listing?.year || undefined,
+      locationType: listing?.locationType || undefined,
+      locationCity: listing?.locationCity || '',
+      motorcycleCategory: listing?.motorcycleCategory || undefined,
+      customsStatus: listing?.customsStatus || undefined,
+      engineCC: listing?.engineCC || undefined,
+      mileage: listing?.mileage || undefined,
+      transmission: listing?.transmission || undefined,
     },
   });
+
+  const selectedType = form.watch('type');
+  const isMotorcycle = selectedType === 'MOTORCYCLE';
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -90,7 +126,6 @@ export function ListingForm({
       return;
     }
 
-    // Validate file sizes
     const invalidFiles = files.filter((file) => file.size > 10 * 1024 * 1024);
     if (invalidFiles.length > 0) {
       toast.error('სურათი არ უნდა აღემატებოდეს 10MB-ს');
@@ -99,7 +134,6 @@ export function ListingForm({
 
     setImages((prev) => [...prev, ...files]);
 
-    // Create previews
     files.forEach((file) => {
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -123,13 +157,13 @@ export function ListingForm({
     setIsSubmitting(true);
     try {
       if (mode === 'create') {
-        await createListing({ ...data, images });
+        await createListing({ ...data, images } as any);
         toast.success('განცხადება დაემატა');
         router.push('/marketplace/my-listings');
       } else if (listing) {
-        await updateListing(listing.id, data);
+        await updateListing(listing.id, data as any);
         toast.success('განცხადება განახლდა');
-        router.push(`/marketplace/${listing.id}`);
+        router.push(`/marketplace/listing/${listing.id}`);
       }
     } catch {
       toast.error('შეცდომა');
@@ -214,6 +248,36 @@ export function ListingForm({
               )}
             />
 
+            <div className="grid gap-4 sm:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="brand"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>მწარმოებელი *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="მაგ: Yamaha" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="model"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>მოდელი *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="მაგ: MT-07" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
             <FormField
               control={form.control}
               name="description"
@@ -235,10 +299,38 @@ export function ListingForm({
             <div className="grid gap-4 sm:grid-cols-2">
               <FormField
                 control={form.control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>ტიპი *</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="აირჩიეთ" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {LISTING_TYPES.map((type) => (
+                          <SelectItem key={type.value} value={type.value}>
+                            {type.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name="price"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>ფასი (₾) *</FormLabel>
+                    <FormLabel>ფასი ($) *</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
@@ -251,133 +343,288 @@ export function ListingForm({
                   </FormItem>
                 )}
               />
-
-              <FormField
-                control={form.control}
-                name="condition"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>მდგომარეობა *</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="აირჩიეთ" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {conditions.map((condition) => (
-                          <SelectItem key={condition} value={condition}>
-                            {conditionLabels[condition]}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </div>
+          </CardContent>
+        </Card>
 
-            <FormField
-              control={form.control}
-              name="categoryId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>კატეგორია *</FormLabel>
-                  <FormControl>
-                    <CategorySelector
-                      categories={categories}
-                      value={field.value}
-                      onSelect={(id) => field.onChange(id)}
-                      error={form.formState.errors.categoryId?.message}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+        {/* Location */}
+        <Card>
+          <CardHeader>
+            <CardTitle>მდებარეობა</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <LocationSelector
+              locationType={form.watch('locationType')}
+              locationCity={form.watch('locationCity')}
+              onLocationTypeChange={(type) => form.setValue('locationType', type)}
+              onLocationCityChange={(city) => form.setValue('locationCity', city)}
             />
           </CardContent>
         </Card>
 
-        {/* Details */}
-        <Card>
-          <CardHeader>
-            <CardTitle>დეტალები</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <FormField
-                control={form.control}
-                name="brand"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>ბრენდი</FormLabel>
-                    <FormControl>
-                      <Input placeholder="მაგ: Yamaha" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+        {/* Motorcycle-specific fields */}
+        {isMotorcycle && (
+          <Card>
+            <CardHeader>
+              <CardTitle>მოტოციკლის დეტალები</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="motorcycleCategory"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>კატეგორია *</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="აირჩიეთ კატეგორია" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {MOTORCYCLE_CATEGORIES.map((cat) => (
+                            <SelectItem key={cat.value} value={cat.value}>
+                              {cat.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name="model"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>მოდელი</FormLabel>
-                    <FormControl>
-                      <Input placeholder="მაგ: MT-07" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                <FormField
+                  control={form.control}
+                  name="customsStatus"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>განბაჟება *</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="აირჩიეთ სტატუსი" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {CUSTOMS_STATUSES.map((status) => (
+                            <SelectItem key={status.value} value={status.value}>
+                              {status.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <FormField
-                control={form.control}
-                name="year"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>წელი</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="მაგ: 2021"
-                        {...field}
-                        onChange={(e) =>
-                          field.onChange(
-                            e.target.value ? Number(e.target.value) : undefined
-                          )
-                        }
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid gap-4 sm:grid-cols-3">
+                <FormField
+                  control={form.control}
+                  name="year"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>წელი *</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="მაგ: 2021"
+                          {...field}
+                          value={field.value || ''}
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value ? Number(e.target.value) : undefined
+                            )
+                          }
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name="location"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>ადგილმდებარეობა</FormLabel>
-                    <FormControl>
-                      <Input placeholder="მაგ: თბილისი" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          </CardContent>
-        </Card>
+                <FormField
+                  control={form.control}
+                  name="engineCC"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>ძრავი (cc) *</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="მაგ: 689"
+                          {...field}
+                          value={field.value || ''}
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value ? Number(e.target.value) : undefined
+                            )
+                          }
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="mileage"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>გარბენი (კმ) *</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="მაგ: 15000"
+                          {...field}
+                          value={field.value || ''}
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value ? Number(e.target.value) : undefined
+                            )
+                          }
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="transmission"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>გადაცემათა კოლოფი *</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="აირჩიეთ" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {TRANSMISSIONS.map((trans) => (
+                            <SelectItem key={trans.value} value={trans.value}>
+                              {trans.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="condition"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>მდგომარეობა *</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="აირჩიეთ" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {conditions.map((condition) => (
+                            <SelectItem key={condition} value={condition}>
+                              {conditionLabels[condition]}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Non-motorcycle condition field */}
+        {!isMotorcycle && (
+          <Card>
+            <CardHeader>
+              <CardTitle>დეტალები</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="condition"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>მდგომარეობა *</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="აირჩიეთ" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {conditions.map((condition) => (
+                            <SelectItem key={condition} value={condition}>
+                              {conditionLabels[condition]}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="year"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>წელი</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="მაგ: 2021"
+                          {...field}
+                          value={field.value || ''}
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value ? Number(e.target.value) : undefined
+                            )
+                          }
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Submit */}
         <div className="flex gap-4">

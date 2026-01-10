@@ -25,7 +25,8 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { useListingsStore } from '@/stores';
 import { conditionLabels } from './condition-badge';
-import type { ListingCategory, ListingCondition, ListingFilters } from '@/types';
+import type { ListingCategory, ListingCondition, ListingFilters, LocationType } from '@/types';
+import { LOCATION_TYPES } from '@/types';
 
 interface ListingFiltersProps {
   categories: ListingCategory[];
@@ -198,14 +199,28 @@ export function ListingFilters({
 
             {/* Location */}
             <div className="space-y-2">
-              <Label>ადგილმდებარეობა</Label>
-              <Input
-                placeholder="მაგ: თბილისი"
-                value={filters.location || ''}
-                onChange={(e) =>
-                  handleFilterChange('location', e.target.value || undefined)
+              <Label>მდებარეობა</Label>
+              <Select
+                value={filters.locationType || 'all'}
+                onValueChange={(value) =>
+                  handleFilterChange(
+                    'locationType',
+                    value === 'all' ? undefined : (value as LocationType)
+                  )
                 }
-              />
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="აირჩიეთ მდებარეობა" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">ყველა</SelectItem>
+                  {LOCATION_TYPES.map((type) => (
+                    <SelectItem key={type.value} value={type.value}>
+                      {type.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <Separator />
