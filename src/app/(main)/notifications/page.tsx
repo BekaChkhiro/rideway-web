@@ -192,6 +192,8 @@ export default function NotificationsPage() {
   const storeNotifications = useNotificationsStore((state) => state.notifications);
   const setStoreNotifications = useNotificationsStore((state) => state.setNotifications);
   const setStoreUnreadCount = useNotificationsStore((state) => state.setUnreadCount);
+  const markAsReadInStore = useNotificationsStore((state) => state.markAsRead);
+  const removeFromStore = useNotificationsStore((state) => state.removeNotification);
 
   // Merge store notifications with local state (for real-time updates)
   useEffect(() => {
@@ -259,6 +261,8 @@ export default function NotificationsPage() {
         prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
       );
       setUnreadCount((prev) => Math.max(0, prev - 1));
+      // Sync with store
+      markAsReadInStore(id);
     } catch {
       toast.error('შეცდომა');
     }
@@ -269,6 +273,8 @@ export default function NotificationsPage() {
       await markAllNotificationsAsRead();
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
       setUnreadCount(0);
+      // Sync with store
+      setStoreUnreadCount(0);
       toast.success('ყველა შეტყობინება წაკითხულია');
     } catch {
       toast.error('შეცდომა');
@@ -283,6 +289,8 @@ export default function NotificationsPage() {
       if (notification && !notification.isRead) {
         setUnreadCount((prev) => Math.max(0, prev - 1));
       }
+      // Sync with store
+      removeFromStore(id);
       toast.success('შეტყობინება წაიშალა');
     } catch {
       toast.error('შეცდომა');

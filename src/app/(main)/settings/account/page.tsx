@@ -3,6 +3,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useEffect } from 'react';
 import { Loader2, AlertTriangle } from 'lucide-react';
 import {
   Card,
@@ -37,12 +38,12 @@ import { useAuth } from '@/hooks/use-auth';
 import { toast } from '@/lib/toast';
 
 const emailSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
-  currentPassword: z.string().min(1, 'Password is required'),
+  email: z.string().email('შეიყვანე სწორი ელ-ფოსტის მისამართი'),
+  currentPassword: z.string().min(1, 'პაროლი სავალდებულოა'),
 });
 
 const phoneSchema = z.object({
-  phone: z.string().min(9, 'Please enter a valid phone number'),
+  phone: z.string().min(9, 'შეიყვანე სწორი ტელეფონის ნომერი'),
 });
 
 type EmailFormData = z.infer<typeof emailSchema>;
@@ -54,7 +55,7 @@ export default function AccountSettingsPage() {
   const emailForm = useForm<EmailFormData>({
     resolver: zodResolver(emailSchema),
     defaultValues: {
-      email: user?.email || '',
+      email: '',
       currentPassword: '',
     },
   });
@@ -62,9 +63,22 @@ export default function AccountSettingsPage() {
   const phoneForm = useForm<PhoneFormData>({
     resolver: zodResolver(phoneSchema),
     defaultValues: {
-      phone: user?.phone || '',
+      phone: '',
     },
   });
+
+  // Reset forms when user data loads
+  useEffect(() => {
+    if (user) {
+      emailForm.reset({
+        email: user.email || '',
+        currentPassword: '',
+      });
+      phoneForm.reset({
+        phone: user.phone || '',
+      });
+    }
+  }, [user, emailForm, phoneForm]);
 
   const handleEmailSubmit = (data: EmailFormData) => {
     // TODO: Implement email change

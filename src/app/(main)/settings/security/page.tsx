@@ -3,6 +3,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useMutation } from '@tanstack/react-query';
 import { Loader2, ShieldCheck, Smartphone, Key } from 'lucide-react';
 import {
   Card,
@@ -24,29 +25,30 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/use-auth';
+import { changePassword } from '@/lib/api/auth';
 import { toast } from '@/lib/toast';
 
 const passwordSchema = z
   .object({
-    currentPassword: z.string().min(1, 'Current password is required'),
+    currentPassword: z.string().min(1, 'მიმდინარე პაროლი სავალდებულოა'),
     newPassword: z
       .string()
-      .min(8, 'Password must be at least 8 characters')
+      .min(8, 'პაროლი მინიმუმ 8 სიმბოლო უნდა იყოს')
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-        'Password must contain at least one uppercase letter, one lowercase letter, and one number'
+        'პაროლი უნდა შეიცავდეს დიდ ასოს, პატარა ასოს და ციფრს'
       ),
-    confirmPassword: z.string().min(1, 'Please confirm your password'),
+    confirmPassword: z.string().min(1, 'გაიმეორე ახალი პაროლი'),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
-    message: "Passwords don't match",
+    message: 'პაროლები არ ემთხვევა',
     path: ['confirmPassword'],
   });
 
 type PasswordFormData = z.infer<typeof passwordSchema>;
 
 export default function SecuritySettingsPage() {
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, isLoading: authLoading, logout } = useAuth();
 
   const form = useForm<PasswordFormData>({
     resolver: zodResolver(passwordSchema),
@@ -57,11 +59,22 @@ export default function SecuritySettingsPage() {
     },
   });
 
+  const passwordMutation = useMutation({
+    mutationFn: (data: PasswordFormData) =>
+      changePassword(data.currentPassword, data.newPassword),
+    onSuccess: () => {
+      toast.success('პაროლი წარმატებით შეიცვალა. გთხოვთ შეხვიდეთ ხელახლა.');
+      form.reset();
+      // Password change revokes all tokens, so log out the user
+      setTimeout(() => logout(), 1500);
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'პაროლის შეცვლა ვერ მოხერხდა');
+    },
+  });
+
   const handlePasswordChange = (data: PasswordFormData) => {
-    // TODO: Implement password change
-    toast.info('პაროლის შეცვლა მალე დაემატება');
-    console.log('Password change:', data);
-    form.reset();
+    passwordMutation.mutate(data);
   };
 
   if (authLoading || !user) {
@@ -151,7 +164,12 @@ export default function SecuritySettingsPage() {
               />
 
               <div className="flex justify-end">
-                <Button type="submit">პაროლის განახლება</Button>
+                <Button type="submit" disabled={passwordMutation.isPending}>
+                  {passwordMutation.isPending && (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  )}
+                  პაროლის განახლება
+                </Button>
               </div>
             </form>
           </Form>

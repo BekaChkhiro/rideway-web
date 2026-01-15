@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
 import { ka } from 'date-fns/locale';
@@ -150,54 +150,56 @@ function NotificationSkeleton() {
   );
 }
 
+// Cache duration in milliseconds (30 seconds)
+const CACHE_DURATION = 30 * 1000;
+
 export function NotificationsDropdown() {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [localNotifications, setLocalNotifications] = useState<Notification[]>([]);
+  const lastFetchRef = useRef<number>(0);
 
-  // Get from store
+  // Get from store (single source of truth)
   const storeNotifications = useNotificationsStore((state) => state.notifications);
   const storeUnreadCount = useNotificationsStore((state) => state.unreadCount);
+  const isLoaded = useNotificationsStore((state) => state.isLoaded);
   const setStoreNotifications = useNotificationsStore((state) => state.setNotifications);
   const setStoreUnreadCount = useNotificationsStore((state) => state.setUnreadCount);
   const markAsReadInStore = useNotificationsStore((state) => state.markAsRead);
   const markAllAsReadInStore = useNotificationsStore((state) => state.markAllAsRead);
 
-  // Merge store notifications with local (for real-time updates)
-  const notifications = [...storeNotifications];
-  // Add local notifications that aren't in store
-  localNotifications.forEach((n) => {
-    if (!notifications.find((sn) => sn.id === n.id)) {
-      notifications.push(n);
-    }
-  });
   // Filter only unread, sort by date, limit to 10
-  const displayNotifications = notifications
+  const displayNotifications = storeNotifications
     .filter((n) => !n.isRead)
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 10);
 
   const unreadCount = storeUnreadCount;
 
-  const fetchNotifications = useCallback(async () => {
+  const fetchNotifications = useCallback(async (force = false) => {
+    // Skip if recently fetched (within cache duration) and not forced
+    const now = Date.now();
+    if (!force && isLoaded && now - lastFetchRef.current < CACHE_DURATION) {
+      return;
+    }
+
     try {
       setIsLoading(true);
       const [{ notifications: data }, count] = await Promise.all([
         getNotifications(1, 10),
         getUnreadNotificationsCount(),
       ]);
-      setLocalNotifications(data);
       setStoreNotifications(data);
       setStoreUnreadCount(count);
+      lastFetchRef.current = now;
     } catch {
       // Silently fail
     } finally {
       setIsLoading(false);
     }
-  }, [setStoreNotifications, setStoreUnreadCount]);
+  }, [isLoaded, setStoreNotifications, setStoreUnreadCount]);
 
-  // Fetch on open
+  // Fetch on open with stale-while-revalidate
   useEffect(() => {
     if (isOpen) {
       fetchNotifications();
@@ -208,9 +210,6 @@ export function NotificationsDropdown() {
     try {
       await markNotificationAsRead(id);
       markAsReadInStore(id);
-      setLocalNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
-      );
     } catch {
       // Silently fail
     }
@@ -220,7 +219,6 @@ export function NotificationsDropdown() {
     try {
       await markAllNotificationsAsRead();
       markAllAsReadInStore();
-      setLocalNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
     } catch {
       // Silently fail
     }
@@ -262,7 +260,7 @@ export function NotificationsDropdown() {
 
         {/* Content */}
         <ScrollArea className="min-h-[300px] max-h-[400px]">
-          {isLoading ? (
+          {isLoading && !isLoaded ? (
             <div className="divide-y">
               {Array.from({ length: 5 }).map((_, i) => (
                 <NotificationSkeleton key={i} />

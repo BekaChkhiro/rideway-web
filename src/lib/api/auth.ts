@@ -105,3 +105,15 @@ export async function loginDirect(
     refreshToken,
   };
 }
+
+// Change password (authenticated)
+export async function changePassword(
+  currentPassword: string,
+  newPassword: string
+): Promise<{ message: string }> {
+  const response = await apiClient.post<ApiResponse<{ message: string }>>(
+    '/auth/change-password',
+    { currentPassword, newPassword }
+  );
+  return response.data.data;
+}

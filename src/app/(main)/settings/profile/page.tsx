@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Loader2, Camera } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -59,12 +59,24 @@ export default function ProfileSettingsPage() {
   const form = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      fullName: user?.fullName || '',
-      username: user?.username || '',
-      bio: user?.bio || '',
-      location: user?.location || '',
+      fullName: '',
+      username: '',
+      bio: '',
+      location: '',
     },
   });
+
+  // Reset form when user data loads
+  useEffect(() => {
+    if (user) {
+      form.reset({
+        fullName: user.fullName || '',
+        username: user.username || '',
+        bio: user.bio || '',
+        location: user.location || '',
+      });
+    }
+  }, [user, form]);
 
   const updateMutation = useMutation({
     mutationFn: async (data: ProfileFormData) => {
