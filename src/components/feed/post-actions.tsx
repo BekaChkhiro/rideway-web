@@ -7,14 +7,16 @@ import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { togglePostLike } from '@/lib/api';
+import { togglePostLike, togglePostSave } from '@/lib/api';
 
 interface PostActionsProps {
   postId: string;
   likesCount: number;
   commentsCount: number;
   isLiked: boolean;
+  isSaved?: boolean;
   onLikeChange?: (isLiked: boolean, likesCount: number) => void;
+  onSaveChange?: (isSaved: boolean) => void;
   showCommentLink?: boolean;
   className?: string;
 }
@@ -24,12 +26,15 @@ export function PostActions({
   likesCount,
   commentsCount,
   isLiked,
+  isSaved: initialSaved = false,
   onLikeChange,
+  onSaveChange,
   showCommentLink = true,
   className,
 }: PostActionsProps) {
   const [isLiking, setIsLiking] = useState(false);
-  const [isSaved, setIsSaved] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSaved, setIsSaved] = useState(initialSaved);
 
   const handleLike = async () => {
     if (isLiking) return;
@@ -63,9 +68,20 @@ export function PostActions({
     }
   };
 
-  const handleSave = () => {
-    setIsSaved(!isSaved);
-    toast.success(isSaved ? 'წაიშალა შენახულებიდან' : 'შეინახა');
+  const handleSave = async () => {
+    if (isSaving) return;
+
+    setIsSaving(true);
+    try {
+      const result = await togglePostSave(postId);
+      setIsSaved(result.saved);
+      onSaveChange?.(result.saved);
+      toast.success(result.saved ? 'შეინახა' : 'წაიშალა შენახულებიდან');
+    } catch {
+      toast.error('ვერ მოხერხდა');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const formatCount = (count: number | undefined | null): string => {
@@ -131,6 +147,7 @@ export function PostActions({
         size="sm"
         className={cn(isSaved && 'text-primary')}
         onClick={handleSave}
+        disabled={isSaving}
       >
         <Bookmark
           className={cn('h-5 w-5', isSaved && 'fill-current')}

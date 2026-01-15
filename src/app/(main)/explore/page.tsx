@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useInView } from 'react-intersection-observer';
 import Link from 'next/link';
 import { TrendingUp, Hash, Loader2 } from 'lucide-react';
@@ -17,6 +17,7 @@ import { AdBanner } from '@/components/ads/ad-banner';
 import type { Post } from '@/types';
 
 export default function ExplorePage() {
+  const queryClient = useQueryClient();
   const { ref, inView } = useInView();
   const [activeTab, setActiveTab] = useState('trending');
 
@@ -55,6 +56,38 @@ export default function ExplorePage() {
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const posts = postsData?.pages.flatMap((page) => page.posts) ?? [];
+
+  const handlePostDeleted = (postId: string) => {
+    queryClient.setQueryData(['posts', 'trending'], (oldData: typeof postsData) => {
+      if (!oldData) return oldData;
+      return {
+        ...oldData,
+        pages: oldData.pages.map((page) => ({
+          ...page,
+          posts: page.posts.filter((p) => p.id !== postId),
+        })),
+      };
+    });
+  };
+
+  const handleLikeToggle = (
+    postId: string,
+    isLiked: boolean,
+    likesCount: number
+  ) => {
+    queryClient.setQueryData(['posts', 'trending'], (oldData: typeof postsData) => {
+      if (!oldData) return oldData;
+      return {
+        ...oldData,
+        pages: oldData.pages.map((page) => ({
+          ...page,
+          posts: page.posts.map((p) =>
+            p.id === postId ? { ...p, isLiked, likesCount } : p
+          ),
+        })),
+      };
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -96,7 +129,12 @@ export default function ExplorePage() {
               ) : (
                 <>
                   {posts.map((post: Post) => (
-                    <PostCard key={post.id} post={post} />
+                    <PostCard
+                      key={post.id}
+                      post={post}
+                      onDelete={handlePostDeleted}
+                      onLikeToggle={handleLikeToggle}
+                    />
                   ))}
 
                   {/* Load more trigger */}

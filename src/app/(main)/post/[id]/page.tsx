@@ -151,6 +151,7 @@ export default function PostDetailPage() {
             likesCount={post.likeCount ?? 0}
             commentsCount={post.commentCount ?? 0}
             isLiked={post.isLiked ?? false}
+            isSaved={post.isSaved}
             onLikeChange={handleLikeChange}
             showCommentLink={false}
           />

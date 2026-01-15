@@ -109,9 +109,9 @@ export function PostCard({
         </div>
 
         {/* Images */}
-        {post.images && post.images.length > 0 && (
+        {currentPost.images && currentPost.images.length > 0 && (
           <div className="mt-3">
-            <PostImages images={post.images} />
+            <PostImages images={currentPost.images} />
           </div>
         )}
       </CardContent>
@@ -122,6 +122,7 @@ export function PostCard({
           likesCount={likesCount}
           commentsCount={post.commentCount ?? 0}
           isLiked={isLiked}
+          isSaved={post.isSaved}
           onLikeChange={handleLikeChange}
           showCommentLink={showCommentLink}
         />
